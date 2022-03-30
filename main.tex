@@ -1,0 +1,65 @@
+\documentclass{article}
+
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0pt}
+
+% Formatting and images 
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage[titletoc,title]{appendix}
+\usepackage{authblk}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{soul}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{indentfirst}
+\usepackage{csquotes}
+
+%% Packages for mathematical typesetting
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{gensymb}
+\usepackage{pgf}
+\usepackage{comment}
+\usepackage{float}
+\usepackage{blindtext}
+\usepackage{enumitem}
+\usepackage{bbm}
+
+\allowdisplaybreaks
+
+\newtheorem{manualtheoreminner}{Theorem}
+\newenvironment{manualtheorem}[1]{%
+  \renewcommand\themanualtheoreminner{#1}%
+  \manualtheoreminner
+}{\endmanualtheoreminner}
+
+\newtheorem{manualpropositioninner}{Proposition}
+\newenvironment{manualproposition}[1]{%
+  \renewcommand\themanualpropositioninner{#1}%
+  \manualpropositioninner
+}{\endmanualtheoreminner}
+
+\newtheorem*{assumption}{Assumption}
+
+% Title content
+\title{\textbf{A Theoretical Analysis of \enquote{Lazy Training} in Deep Learning}}
+\author[]{Henry Smith}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Preliminaries}
+
+\section{}
+
+\end{document}
