@@ -39,6 +39,12 @@
   \manualtheoreminner
 }{\endmanualtheoreminner}
 
+\newtheorem{manuallemmainner}{Lemma}
+\newenvironment{manuallemma}[1]{%
+  \renewcommand\themanuallemmainner{#1}%
+  \manuallemmainner
+}{\endmanualtheoreminner}
+
 \newtheorem{manualpropositioninner}{Proposition}
 \newenvironment{manualproposition}[1]{%
   \renewcommand\themanualpropositioninner{#1}%
@@ -59,7 +65,9 @@
 
 % Abstract
 \begin{abstract}
-    \noindent \end{abstract}
+    \noindent 
+    In \enquote{On Lazy Training in Differentiable Programming},  Chizat, Oyallon, and Bach categorize a regime of neural network training in which a differentiable model behaves like the linearization around its initialization. Consequently, training a model which is perhaps highly nonconvex in its weights is equivalent to training an affine model. For our report, we present two principal theorems from Chizat and colleagues' paper which comprise the foundation of \enquote{lazy training}. Furthermore, we rigorously prove each of these results, expanding upon the arguments made by the authors to give a fuller understanding of how and why lazy training occurs. In addition to the theory, we also provide an understanding of the practical applications of lazy training. Specifically, inspired by the work of Woodworth and colleagues, we introduce the argument that lazy training leads to poor model generalization in sparse problems.
+    \end{abstract}
 
 \pagebreak
 
@@ -69,7 +77,7 @@ The problem of optimizing the weights of a neural network is, in general, a high
 
 In particular, we will study \enquote{implicit biases} in gradient descent when training the weights of a neural network. Intuitively, an \enquote{implicit bias} means that, under certain circumstances, gradient descent behaves in a predictable way and results in a network with certain properties. The implicit bias in which we are interested has been coined \enquote{lazy training} by Chizat, Oyallon, and Bach in their 2018 paper \enquote{On Lazy Training in Differentiable Programming}. In the lazy training regime, a network behaves as a linearization around its initialization, and so training a model which is highly nonconvex in its parameters is simplified to a training an affine model. When the network is identically zero at its initialization, this means that training is equivalent to a kernel method with feature map given by the gradient of the network at its initialization. Of course, it cannot generally be true that networks are trained in the lazy regime, and so we wish to prove some formal results about when lazy training occurs.
 
-We structure our report of lazy training as follows. In Section \ref{prelim}, we introduce mathematical notation that will be helpful for discussing and proving the theoretical results in Section \ref{theory}. This section is also of particular importance as it defines the \enquote{linearized model,} which forms the basis of lazy training. In Section \ref{theory}, we state, prove, and discuss the implications of three main results from \enquote{On Lazy Training in Differentiable Programming} by Chizat, Oyallon and Bach. These results constitute the fundamental theory of lazy training, suggesting under what conditions lazy training occurs and how it is realized throughout training. We conclude our discussion of lazy training in Section \ref{extensions} by suggesting some extensions of the results from \cite{chizat2018lazy}. In particular, we mention the properties (i.e. biases) of those models trained with lazy training and suggest some settings in which non-lazy training is preferable.
+We structure our report of lazy training as follows. In Section \ref{prelim}, we introduce mathematical notation that will be helpful for discussing and proving the theoretical results in Section \ref{theory}. This section is also of particular importance as it defines the \enquote{linearized model}, which forms the basis of lazy training. In Section \ref{theory}, we state, prove, and discuss the implications of three main results from \enquote{On Lazy Training in Differentiable Programming} by Chizat, Oyallon and Bach. These results constitute the fundamental theory of lazy training, suggesting under what conditions lazy training occurs and how it is realized throughout training. We conclude our discussion of lazy training in Section \ref{extensions} by suggesting some extensions of the results from \cite{chizat2018lazy}. In particular, we mention the properties (i.e. biases) of those models trained with lazy training and suggest some settings in which non-lazy training is preferable.
 
 \section{Preliminaries}\label{prelim}
 
@@ -97,7 +105,7 @@ In even greater specificity, when the output of the network is one-dimensional $
     \bar{f}(\boldsymbol{w}, \boldsymbol{x}) =& f(\boldsymbol{w}_0, \boldsymbol{x}) + \nabla_w f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w} - \boldsymbol{w}_0) \nonumber\\
     =& f(\boldsymbol{w}_0, \boldsymbol{x}) + \langle \nabla_w f(\boldsymbol{w}_0, \boldsymbol{x}), \boldsymbol{w} - \boldsymbol{w}_0 \rangle \quad \boldsymbol{x} \in \mathbb{R}^d, \quad \boldsymbol{w} \in \mathbb{R}^p\label{linearizednetwork}.
 \end{align}
-One will discern that for this case of $f(\boldsymbol{w}, \cdot): \mathbb{R}^d \rightarrow \mathbb{R}$, $\bar{h}$ is no more than a first-order Taylor expansion of the model $h$ around its initialization $\boldsymbol{w}_0$.
+One will discern that for this case of $f(\boldsymbol{w}, \cdot): \mathbb{R}^d \rightarrow \mathbb{R}$, $\bar{h}$ is no more than a first-order Taylor expansion of the model $h$ around its initialization $\boldsymbol{w}_0$ for each fixed $\boldsymbol{x} \in \mathbb{R}^d$.
 
 So far, we have suggested two mathematical objects of interest, the model $h$ and its corresponding linearized model $\bar{h}$. For each vector $\boldsymbol{w} \in \mathbb{R}^p$ we compute the misfit of $h(\boldsymbol{w})$ and $\bar{h}(\boldsymbol{w})$ according to $R(h(\boldsymbol{w}))$ and $R(\bar{h}(\boldsymbol{w}))$, respectively. However, rather than dealing with $R(h(\boldsymbol{w}))$ and $R(\bar{h}(\boldsymbol{w}))$, Chizat and colleagues consider the objective functions corresponding to the scaled models $\alpha h$ and $\alpha \bar{h}$ for some $\alpha > 0$:
 \begin{align}
@@ -114,26 +122,26 @@ The gradient flow of $\bar{F}_{\alpha}$ is defined analogously. Of key interest 
 
 We mention that when the model $h$ is $m$-positive homogeneous, then scaling the model output by $\alpha$ is equivalent to scaling the model weights by $\alpha^{1/m}$. That is, $h(\alpha \boldsymbol{w}) = \alpha^m h(\boldsymbol{w})$ for every $\boldsymbol{w} \in \mathbb{R}^p$ and each $\alpha > 0$. Therefore, for $m$-positive homogeneous model $h$, the gradient flow on $\frac{1}{\alpha^2}R(\alpha h(\boldsymbol{w}))$ with $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{w}_0$ is equivalent to the gradient flow on $\frac{1}{\alpha^2}R(h(\boldsymbol{w}))$ with $\boldsymbol{w}_{\alpha}(0) = \alpha^{1/m}\boldsymbol{w}_0$.
 
-Under suitable conditions on the model $h$ and the loss function $R$, \cite{chizat2018lazy} proves that as $\alpha \rightarrow \infty$, the gradient flow of $F_{\alpha}(\boldsymbol{w})$ approaches that of $\bar{F}_{\alpha}(\boldsymbol{w})$. That is to say, for a neural network that is positive homogeneous its weights, by taking the scale with which we initialize the weights to infinity, then training the model  $h$ with gradient flow is equivalent to training the linearized model $\bar{h}$. The specific details of these results from \cite{chizat2018lazy} are the primary focus of Section \ref{theory}.
+Under suitable conditions on the model $h$ and the loss function $R$, \cite{chizat2018lazy} proves that as $\alpha \rightarrow \infty$, the gradient flow of $F_{\alpha}(\boldsymbol{w})$ approaches that of $\bar{F}_{\alpha}(\boldsymbol{w})$. This implies that for a neural network that is positive homogeneous its weights, by taking the scale with which we initialize the weights to infinity, then training the model  $h$ with gradient flow is equivalent to training the linearized model $\bar{h}$. The specific details of these results from \cite{chizat2018lazy} are the primary focus of Section \ref{theory}.
 
 \section{Theoretical Results}\label{theory}
 
-Now that we have rigorously defined the linearized model $\bar{h}$ as well as the gradient flow on $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$, we are well-equipped to study the key results from \cite{chizat2018lazy} regarding lazy training. In particular, we will characterize the relationship between the gradient flow paths $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ and $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$ as well as the corresponding predictor functions $\alpha h(\boldsymbol{w}_{\alpha}(t))$ and $\alpha \bar{h}(\boldsymbol{w}_{\alpha}(t))$ evaluated at the gradient flow as the scale of the model output $\alpha \rightarrow \infty$. By way of discussing and proving these theorems, we will gain a deeper understanding of lazy training, particularly as it pertains to neural network optimization.
+Now that we have rigorously defined the linearized model $\bar{h}$ as well as the gradient flow on $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$, we are well-equipped to study the key results from \cite{chizat2018lazy} regarding lazy training. In particular, we will characterize the relationship between the gradient flow paths $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ and $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$ as well as the predictor functions $\alpha h(\boldsymbol{w})$ and $\alpha \bar{h}(\boldsymbol{w})$ evaluated along their respective gradient flow paths as the scale of the model output $\alpha \rightarrow \infty$. By way of discussing and proving these theorems, we will gain a deeper understanding of lazy training, particularly as it pertains to neural network optimization.
 
 \subsection{Finite-time Bounds}\label{finitebounds}
 
 The first result that we consider relates the gradient flow dynamics of $F_{\alpha}(\boldsymbol{w})$ and those of $\bar{F}_{\alpha}(\boldsymbol{w})$ in the limit $\alpha \rightarrow \infty$ for a finite time horizon. In particular, the result we will prove from \cite{chizat2018lazy} demonstrates that at any time $t \geq 0$, the gradient flow of $F_{\alpha}(\boldsymbol{w})$ at time $t$, $\boldsymbol{w}_{\alpha}(t)$, is equivalent to that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at time $t$, $\boldsymbol{\bar{w}}_{\alpha}(t)$, in the  $\alpha \rightarrow \infty$ limit. Therefore, the $t \rightarrow \infty$ limit reached by the gradient flow of $F_{\alpha}$, $\lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t)$, is the same as that reached by the gradient flow of $\bar{F}_{\alpha}$, $\lim_{t \to \infty} \boldsymbol{\bar{w}}_{\alpha}(t)$, in the $\alpha \rightarrow \infty$ limit. That is to say, we observe lazy training as the scale of the model output $\alpha > 0$ grows large. This gives us our first explicit characterization of when lazy training occurs. We state the relevant theorem and proceed to prove the result:
 
 \begin{manualtheorem}{2.2}[from \cite{chizat2018lazy}]\label{finitehorizon}
-Assume that $h(\boldsymbol{w}_0) = 0$. Given a fixed time horizon $T > 0$, it holds that $\sup_{t \in [0, T]} \Vert \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \Vert = \mathcal{O}(1/\alpha)$,
+Assume that $h(\boldsymbol{w}_0) = 0$. Given a fixed time horizon $T > 0$, it holds that $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \| = \mathcal{O}(1/\alpha)$,
 \begin{align*}
-    \sup_{t \in [0, T]} \Vert \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \Vert = \mathcal{O}(1/\alpha^2) \quad \text{and} \quad \sup_{t \in [0, T]} \Vert \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \Vert = \mathcal{O}(1/\alpha).
+    \sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \| = \mathcal{O}(1/\alpha^2) \quad \text{and} \quad \sup_{t \in [0, T]} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \| = \mathcal{O}(1/\alpha).
 \end{align*}
 \end{manualtheorem}
 
-\begin{proof} For both this proof and that of Theorem \ref{finitehorizon} in Section \ref{finitehorizon} it will be useful to define $y(t) = \alpha h(\boldsymbol{w}_{\alpha}(t))$ and $\bar{y}(t) = \alpha \bar{h}(\boldsymbol{\boldsymbol{\bar{w}}}_{\alpha}(t))$ to be the dynamics in $\mathcal{F}$. That is, $y(t)$ is simply the scaled model $\alpha h(\boldsymbol{w})$ evaluated along the gradient flow path of $F_{\alpha}(\boldsymbol{w})$, $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$, $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{w}_0$, that we previously discussed. 
+\begin{proof} For both this proof and that of Theorem \ref{uniformbound} in Section \ref{extenduniform} it will be useful to define $y(t) = \alpha h(\boldsymbol{w}_{\alpha}(t))$ and $\bar{y}(t) = \alpha \bar{h}(\boldsymbol{\boldsymbol{\bar{w}}}_{\alpha}(t))$ to be the dynamics in $\mathcal{F}$. That is, $y(t)$ is simply the scaled model $\alpha h(\boldsymbol{w})$ evaluated along the gradient flow path of $F_{\alpha}(\boldsymbol{w})$, $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$, $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{w}_0$, that we previously discussed. 
 
-To be consistent with the notation from \cite{chizat2018lazy}, we define $\Sigma(\boldsymbol{w}) := Dh(\boldsymbol{w})Dh(\boldsymbol{w})^T$ to be the neural tangent kernel (NTK) at weight vector $\boldsymbol{w} \in \mathbb{R}^p$ \cite{jacot2018neural}. The neural tangent kernel has gained recent popularity in the subject of theoretical deep learning due to the fact that in the limit $\alpha \rightarrow \infty$, the gradient flow (\ref{gradflow}) with appropriate model and loss function is no more than a kernel method with kernel given by the NTK. While we do not have sufficient space to flesh out this result, we suggest \cite{jacot2018neural} and \cite{chizat2018lazy} as references regarding the neural tangent kernel. From our definition, it is evident that $\Sigma(\boldsymbol{w})$ defines a quadratic form on $\mathcal{F}$ given by $f \mapsto f\Sigma(\boldsymbol{w})f$ for each $f \in \mathcal{F}$. Using the neural tangent kernel $\Sigma(\boldsymbol{w})$, we can say that $y(t)$ and $\bar{y}(t)$ must solve the differential equations
+To be consistent with the notation from \cite{chizat2018lazy}, we define $\Sigma(\boldsymbol{w}) := Dh(\boldsymbol{w})Dh(\boldsymbol{w})^T$ to be the neural tangent kernel (NTK) at weight vector $\boldsymbol{w} \in \mathbb{R}^p$ \cite{jacot2018neural}. The neural tangent kernel has gained recent popularity in the field of theoretical deep learning due to the fact that in the limit $\alpha \rightarrow \infty$, the gradient flow (\ref{gradflow}) with appropriate model and loss function is no more than a kernel method with kernel given by the NTK. While we do not have sufficient space to flesh out this result, we suggest \cite{jacot2018neural} and \cite{chizat2018lazy} as references regarding the neural tangent kernel. From our definition, it is evident that $\Sigma(\boldsymbol{w})$ defines a quadratic form on $\mathcal{F}$ given by $f \mapsto f\Sigma(\boldsymbol{w})f$ for each $f \in \mathcal{F}$. Using the neural tangent kernel $\Sigma(\boldsymbol{w})$, we can say that $y(t)$ and $\bar{y}(t)$ must solve the differential equations
 \begin{align*}
     \frac{d}{dt}y(t) &= \alpha \frac{d}{dt}h(\boldsymbol{w}_{\alpha}(t)) = \alpha Dh(\boldsymbol{w}(t)) \frac{d}{dt}\boldsymbol{w}_{\alpha}(t) = -\alpha Dh(\boldsymbol{w}(t)) \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(t))\\
     &=  -\alpha Dh(\boldsymbol{w}_{\alpha}(t)) \left( \alpha Dh(\boldsymbol{w}_{\alpha}(t))^T \right) \left( \frac{1}{\alpha^2} \nabla R(\alpha h(\boldsymbol{w}_{\alpha}(t))) \right) \\
@@ -150,15 +158,15 @@ with initial condition $y(0) = \bar{y}(0) = \alpha h(\boldsymbol{w}_0)$. Here, w
   D\bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) &= D\bigg( h(\boldsymbol{\bar{w}}_{\alpha}(0)) + Dh(\boldsymbol{\bar{w}}_{\alpha}(0))(\boldsymbol{\bar{w}}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(0))  \bigg)\\
   &= Dh(\boldsymbol{\bar{w}}_{\alpha}(0)) = Dh(\boldsymbol{w}_{\alpha}(0)).
 \end{align*}
-That is, $\bar{h}$ is an affine model whose derivative at all input vectors $\boldsymbol{w} \in \mathbb{R}^p$ is equal to the derivative of $h$ at its initialization $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{w}_0$. Now that we have described $y(t)$ and $\bar{y}(t)$ as well as the differential equations that they must satisfy, we are prepared to proceed with our proof.
+That is, $\bar{h}$ is an affine model whose derivative at all input vectors $\boldsymbol{w} \in \mathbb{R}^p$ is equal to the derivative of $h$ at its initialization $\boldsymbol{\bar{w}}_{\alpha}(0) = \boldsymbol{w}_0$. Now that we have described $y(t)$ and $\bar{y}(t)$ as well as the differential equations that they must satisfy, we are prepared to proceed with our proof.
 
-Accordingly, let $T > 0$ be an arbitrary time horizon for the gradient flow on $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$. We will first tackle the statement $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$. This result will give us a bound on how far the gradient flow path $\boldsymbol{w}_{\alpha}(t)$ moves from its initialization $\boldsymbol{w}_{\alpha}(0)$ on the interval $[0, T]$. In fact, it will tell us that in the limit $\alpha \rightarrow \infty$, the gradient flow path on $F_{\alpha}(\boldsymbol{w})$ at any time $t \geq 0$, $\boldsymbol{w}_{\alpha}(t)$, remains fixed at the initialization $\boldsymbol{w}_{\alpha}(0)$. This provides another characterization of lazy training that we have not yet discussed: lazy training is truly \enquote{lazy} in the sense that the gradient flow path remains close to its initialization.
+Accordingly, let $T > 0$ be an arbitrary time horizon for the gradient flow of $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$. We will first tackle the statement $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$. This result will give us a bound on how far the gradient flow path $\boldsymbol{w}_{\alpha}(t)$ moves from its initialization $\boldsymbol{w}_{\alpha}(0)$ on the interval $[0, T]$. In fact, it will tell us that in the limit $\alpha \rightarrow \infty$, the gradient flow path on $F_{\alpha}(\boldsymbol{w})$ at any time $t \geq 0$, $\boldsymbol{w}_{\alpha}(t)$, remains fixed at the initialization $\boldsymbol{w}_{\alpha}(0)$. This provides another characterization of lazy training that we have not yet discussed: lazy training is truly \enquote{lazy} in the sense that the gradient flow path remains close to its initialization.
 
 First, by the Fundamental Theorem of Calculus and properties of the integral it holds that for each $t \in [0, T]$,
 \begin{align*}
     \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_{0} \|_2 = \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_{\alpha}(0) \|_2 = \left\Vert \int_0^t \boldsymbol{w}_{\alpha}'(s) \ ds  \right\Vert_2 \leq  \int_0^t \| \boldsymbol{w}_{\alpha}'(s) \|_2 \ ds \leq \int_0^T \| \boldsymbol{w}_{\alpha}'(s) \|_2 \ ds.
 \end{align*}
-Note that $\boldsymbol{w}_{\alpha}'(\cdot): \mathbb{R}_+ \rightarrow \mathbb{R}^p$, and so here we let
+Note that $\boldsymbol{w}_{\alpha}'(\cdot): \mathbb{R}_+ \rightarrow \mathbb{R}^p$, and so the integral is defined component-wise:
 \begin{align*}
     \int_0^t \boldsymbol{w}_{\alpha}'(s) \ ds := \left( \int_0^t (\boldsymbol{w}_{\alpha})_1'(s) \ ds, \ldots, \int_0^t (\boldsymbol{w}_{\alpha})_p'(s) \ ds  \right) \in \mathbb{R}^p.
 \end{align*}
@@ -169,7 +177,7 @@ Thus, in order to determine a bound on $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\a
     &= \int_0^T \mathbbm{1} \cdot \| \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(s)) \|_2 \ ds \\
     &\leq \sqrt{T} \left( \int_0^T \| \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(s)) \|_2^2 \ ds \right)^{1/2}. & \text{Cauchy-Schwarz for $L^2([0, T])$}
 \end{align*}
-In order to invoke Cauchy-Schwarz in the final line, we must have $ \|\boldsymbol{w}_{\alpha}'(t) \|_2 \in L^2([0, T])$. This is true because $\| \boldsymbol{w}_{\alpha}'(t) \|_2 = \| \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(t)) \|_2$, where each of $\nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(t)): \mathbb{R}_+ \rightarrow \mathbb{R}^p$ and $\| \cdot \|_2: \mathbb{R}^p \rightarrow \mathbb{R}_+$ is continuous. Accordingly, is true that $\|\boldsymbol{w}_{\alpha}'(t) \|_2$ is continuous on the closed interval $[0, T]$, and so it belongs to $L^2([0, T])$.
+In order to invoke Cauchy-Schwarz in the final line, we must have $ \|\boldsymbol{w}_{\alpha}'(t) \|_2 \in L^2([0, T])$. This is true because each of $\boldsymbol{w}_{\alpha}'(\cdot): \mathbb{R}_+ \rightarrow \mathbb{R}^p$ and $\| \cdot \|_2: \mathbb{R}^p \rightarrow \mathbb{R}_+$ is continuous. Accordingly, is true that $\|\boldsymbol{w}_{\alpha}'(t) \|_2$ is continuous on the closed interval $[0, T]$, and so it belongs to $L^2([0, T])$.
 
 Now to simplify the integrand, we use the fact that 
 \begin{align*}
@@ -195,7 +203,7 @@ Therefore, we conclude that for each $T > 0$,
 \begin{align*}
     \sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \leq \frac{1}{\alpha} \bigg(T \cdot R(\alpha h(\boldsymbol{w}_{\alpha}(0))) \bigg)^{1/2} = \mathcal{O}(1/\alpha),
 \end{align*}
-as we wished to prove. Notice that, although the $\mathcal{O}(1/\alpha)$ hides the dependence on $T$, our bound on $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$ grows sublinearly in $T$. In order to achieve a bound which does not depend on this finite time horizon $T$, we will need the stronger assumptions on $h$ and $R$ that appear in Theorem \ref{finitehorizon}.
+as we wished to prove. Notice that, although the $\mathcal{O}(1/\alpha)$ hides the dependence on $T$, our bound on $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$ grows sublinearly in $T$. In order to achieve a bound which does not depend on this finite time horizon $T$, we will need the stronger assumptions on $h$ and $R$ that appear in Theorem \ref{uniformbound}.
 
 As a consequence of this bound on $ \sup_{t \in [0, T]} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$, we get a couple additional results that will be useful throughout the remainder of our proof.
 
@@ -213,26 +221,36 @@ By a similar argument, we can show that $\sup_{t \in [0, T]} \|\boldsymbol{w}_{\
     \sup_{t \in [0, T]} \| \nabla R(y(t))\|_{\mathcal{F}} = \sup_{t \in [0, T]} \| \nabla R(\alpha h(\boldsymbol{w}_{\alpha}(t)))\|_{\mathcal{F}} \leq C.
 \end{align*}
 
-We continue on by proving the bound $\sup_{t \in [0, T]} \Vert \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \Vert_{\mathcal{F}} = \mathcal{O}(1/\alpha).$ While the first result established a bound on the distance of between the gradient flow path and its initialization on the interval $[0, T]$, this result will bound the distance between the scaled model $\alpha h$ and its linearized counterpart $\alpha \bar{h}$ evaluated along their respective gradient flow paths $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ and $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$ on $[0, T]$. Consequently, we observe that as $\alpha \rightarrow \infty$ the scaled original model $\alpha h$ evaluated at $\boldsymbol{w}_{\alpha}(t)$ is equivalent to the scaled linearized model $\alpha \bar{h}$ evaluated at $\boldsymbol{\bar{w}}_{\alpha}(t)$ for any time $t \geq 0$.
+We continue on by proving the bound $\sup_{t \in [0, T]} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \|_{\mathcal{F}} = \mathcal{O}(1/\alpha).$ While the first result established a bound on the distance of between the gradient flow path and its initialization on the interval $[0, T]$, this result will bound the distance between the scaled model $\alpha h$ and its linearized counterpart $\alpha \bar{h}$ evaluated along their respective gradient flow paths $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ and $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$ on $[0, T]$. Consequently, we observe that as $\alpha \rightarrow \infty$ the scaled original model $\alpha h$ evaluated at $\boldsymbol{w}_{\alpha}(t)$ is equivalent to the scaled linearized model $\alpha \bar{h}$ evaluated at $\boldsymbol{\bar{w}}_{\alpha}(t)$ for any time $t \geq 0$.
 
-To start off our proof, we recall our notation $y(t) = \alpha h(\boldsymbol{w}_{\alpha}(t))$, $\bar{y}(t) = \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t))$ from Section \ref{prelim}. With these functions $y$, $\bar{y}$, we define $\Delta(t) = \| y(t) - \bar{y}(t) \|_{\mathcal{F}}, \ \forall t \geq 0$, which is the distance between $y(t)$ and $\bar{y}(t)$ in the Hilbert space $\mathcal{F}$. By the definition of the linearized model $\bar{h}$, we know that $\Delta$ satisfies $\Delta(0) = \| y(0) - \bar{y}(0) \|_{\mathcal{F}} = |\alpha|  \| h(\boldsymbol{w}_0) - \bar{h}(\boldsymbol{w}_0) \|_{\mathcal{F}} = |\alpha| \| h(\boldsymbol{w}_0) - h(\boldsymbol{w}_0) \|_{\mathcal{F}} = 0$. Furthermore, for each $t \geq 0$ we derive an upper bound on the derivative $\Delta'(t)$: 
+To start off our proof, we recall our notation $y(t) = \alpha h(\boldsymbol{w}_{\alpha}(t))$, $\bar{y}(t) = \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t))$ from Section \ref{prelim}. With these functions $y$, $\bar{y}$, we define $\Delta(t) = \| y(t) - \bar{y}(t) \|_{\mathcal{F}}, \ \forall t \geq 0$, which is the distance between $y(t)$ and $\bar{y}(t)$ in the Hilbert space $\mathcal{F}$. By the definition of the linearized model $\bar{h}$, we know that $\Delta$ satisfies $\Delta(0) = \| y(0) - \bar{y}(0) \|_{\mathcal{F}} = \alpha  \| h(\boldsymbol{w}_0) - \bar{h}(\boldsymbol{w}_0) \|_{\mathcal{F}} = \alpha \| h(\boldsymbol{w}_0) - h(\boldsymbol{w}_0) \|_{\mathcal{F}} = 0$. Furthermore, we derive an upper bound on the derivative $\Delta'(t)$. In particular, for each $t > 0$ we have
 \begin{align*}
-    \Delta'(t) &= \frac{d}{dt}\| y(t) - \bar{y}(t) \|_{\mathcal{F}}\\
-    &= \frac{d}{dt}\left\Vert \left( \int_0^t \frac{d}{ds} (y(s) - \bar{y}(s)) \ ds \right) \right\Vert_{\mathcal{F}} & \text{Fundamental Theorem of Calculus}\\
-    &= \frac{d}{dt}\left\Vert \left( \int_0^t y'(s) - \bar{y}'(s) \ ds \right) \right\Vert_{\mathcal{F}}\\
-    &\leq \frac{d}{dt}\left( \int_0^t \left\Vert y'(s) - \bar{y}'(s) \right\Vert_{\mathcal{F}} \ ds \right)\\
-    &=  \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}. & \text{Fundamental Theorem of Calculus}
+    \frac{d}{dt} \left( \Delta(t)^2 \right)&= \frac{d}{dt}\| y(t) - \bar{y}(t) \|_{\mathcal{F}}^2\\
+    &= \frac{d}{dt} \langle y(t) - \bar{y}(t), y(t) - \bar{y}(t) \rangle_{\mathcal{F}}\\
+    &= 2\langle y'(t) - \bar{y}'(t), y(t) - \bar{y}(t) \rangle_{\mathcal{F}}\\
+    &\leq 2 \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}} \|y(t) - \bar{y}(t) \|_{\mathcal{F}} & \text{Cauchy–Schwarz in $\mathcal{F}$}\\
+    &= 2 \Delta(t) \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}
 \end{align*}
-This was quite a slick trick and only required our differentiability assumptions on $h: \mathbb{R}^p \rightarrow \mathcal{F}$ and $R: \mathcal{F} \rightarrow \mathbb{R}_+$. Continuing on, recall the expressions for $y'(t)$ and $\bar{y}'(t)$, $t \geq 0$ that we derived in Section \ref{prelim}. Substituting them into the bound on $\frac{d}{dt} \Delta(t)$ we derived, we get
+But by the chain rule we also know
 \begin{align*}
-    \frac{d}{dt} \Delta(t) &\leq \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}\\
+    \frac{d}{dt}(\Delta(t)^2) =  2 \Delta(t) \Delta'(t),
+\end{align*}
+and so the above result implies that $\forall t > 0$,
+\begin{align*}
+    &2 \Delta(t) \Delta'(t) \leq 2 \Delta(t) \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}\\
+    \implies& \Delta'(t) \leq \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}.
+\end{align*}
+
+Recall the explicit expressions for $y'(t)$ and $\bar{y}'(t)$, $t > 0$ that we derived at the beginning of our proof. Substituting them into the bound on $\Delta'(t)$, we get
+\begin{align*}
+    \Delta'(t) &\leq \| y'(t) - \bar{y}'(t) \|_{\mathcal{F}}\\
     &= \| \Sigma(\boldsymbol{w}_{\alpha}(t)) \nabla R(y(t)) -  \Sigma(\boldsymbol{w}_{\alpha}(0)) \nabla R(\bar{y}(t)) \|_{\mathcal{F}}\\
     &\leq \| \Sigma(\boldsymbol{w}_{\alpha}(t)) \nabla R(y(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0)) \nabla R(y(t)) \|_{\mathcal{F}} + \| \Sigma(\boldsymbol{w}_{\alpha}(0)) \nabla R(y(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0)) \nabla R(\bar{y}(t))\|_{\mathcal{F}}\\
     &= \| (\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))) \nabla R(y(t))\|_{\mathcal{F}} + \| \Sigma(\boldsymbol{w}_{\alpha}(0))(\nabla R(y(t)) - \nabla R(\bar{y}(t)))\|_{\mathcal{F}}.
 \end{align*}
 The second inequality is achieved by adding and subtracting a term of $\Sigma(\boldsymbol{w}_{\alpha}(0)) \nabla R(y(t))$ and subsequently applying the triangle inequality for the norm $\mathcal{F}$. Next, we will invoke the properties of the operator norm, where our operator $f \mapsto \Sigma(\boldsymbol{w}) f$ maps from normed vector space $\mathcal{F}$ to itself. In particular, since $Dh(\boldsymbol{w}): \mathbb{R}^p \rightarrow \mathcal{F}$ is continuous and linear (for each $\boldsymbol{w} \in \mathbb{R}^p$), then so is $f \mapsto \Sigma(\boldsymbol{w}) f$, where $\Sigma(\boldsymbol{w}) = Dh(\boldsymbol{w})Dh(\boldsymbol{w})^T$. As a result, we have get that for each $f \in \mathcal{F}$, $\| \Sigma(\boldsymbol{w}) f\| \leq \| \Sigma(\boldsymbol{w}) \| \| f \|_{\mathcal{F}}$, where $\| \cdot \|$ denotes the operator norm. Applying this inequality to the above expression, we get
 \begin{align*}
-    \frac{d}{dt} \Delta(t) &\leq \|\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))\| \| \nabla R(y(t))\|_{\mathcal{F}} + \| \Sigma(\boldsymbol{w}_{\alpha}(0)) \| \| \nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}}.
+    \Delta'(t) &\leq \|\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))\| \| \nabla R(y(t))\|_{\mathcal{F}} + \| \Sigma(\boldsymbol{w}_{\alpha}(0)) \| \| \nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}}.
 \end{align*}
 
 From here, we bound each of the two terms separately, starting with the first term. To consider the factor $\|\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))\|$, we cite the result from \cite{chizat2018lazy} which states that $\text{Lip}(\Sigma) \leq 2 \text{Lip}(h) \text{Lip}(Dh)$. Note that $\text{Lip}(\Sigma)$ is defined with respect to the operator norm. From the first result we proved, we know that we are dealing with $\boldsymbol{w}_{\alpha}(t)$ contained in a closed Euclidean ball $B_{\epsilon}(\boldsymbol{w}_0)$ with some radius $\epsilon \geq 0$. And so $Dh$ locally Lipschitz (our assumption) on compact set $B_{\epsilon}(\boldsymbol{w}_0)$ implies $Dh$ Lipschitz on $B_{\epsilon}(\boldsymbol{w}_0)$. Also, $Dh$ continuous on $B_{\epsilon}(\boldsymbol{w}_0)$ implies that $h$ is Lipschitz on $B_{\epsilon}(\boldsymbol{w}_0)$. Letting $\text{Lip}(Dh)$ and $\text{Lip}(h)$ be the Lipschitz constants of $Dh$ and $h$ on $B_{\epsilon}(\boldsymbol{w}_0)$, respectively, we get the desired bound on $\text{Lip}(\Sigma)$. Invoking the first result that we proved, we get $\|\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))\| \leq 2 \cdot \text{Lip}(h) \cdot \text{Lip}(Dh) \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_{\alpha}(0) \|_2 \leq 2 \cdot \text{Lip}(h) \cdot \text{Lip}(Dh) \cdot C /\alpha$ for some constant $C \geq 0$. As for the factor $\| \nabla R(y(t))\|_{\mathcal{F}}$, we recall the result we previously proved that $\sup_{\tilde{t} \in [0, T]} \| \nabla R(y(\tilde{t}))\|_{\mathcal{F}} \leq \tilde{C}$ for some constant $\tilde{C} \geq 0$. And so, in all, we have proven that $\|\Sigma(\boldsymbol{w}_{\alpha}(t)) - \Sigma(\boldsymbol{w}_{\alpha}(0))\| \| \nabla R(y(t))\|_{\mathcal{F}} \leq C_1/\alpha$ for some constant $C_1 \geq 0$.
@@ -243,7 +261,7 @@ Altogether, we have shown that
 \begin{align*}
     \Delta'(t) \leq C_1/\alpha + C_2\Delta(t), \quad \Delta(0) = 0
 \end{align*}
-for suitable constants $C_1, C_2 \geq 0$. We notice, though, that the equation $u'(t) = C_1/\alpha + C_2 u(t)$ with initial condition $u(0) = 0$ defines a first-order, linear differential equation. This equation has a unique solution on all of $\mathbb{R}$, which we determine using an integrating factor:
+for suitable constants $C_1, C_2 \geq 0$. We notice, though, that the equation $u'(t) = C_1/\alpha + C_2 u(t)$ with initial condition $u(0) = 0$ defines a first-order, linear differential equation. This equation has a unique solution that exists on all of $\mathbb{R}_+$, which we determine using an integrating factor:
 \begin{align*}
     &u'(t) = C_1/\alpha + C_2 u(t)\\
     &u'(t) - C_2u(t) = C_1/\alpha\\
@@ -261,14 +279,14 @@ Therefore, we conclude
 \begin{align*}
    \sup_{t \in [0, T]} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \|_{\mathcal{F}} \leq \frac{1}{\alpha} \left( \frac{C_1}{C_2}(\exp(C_2T) - 1) \right) = \mathcal{O}(1/\alpha).
 \end{align*}
-One will observe that the resulting bound is worse than than that we derived on $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$ as there is an exponential dependence on the finite time horizon $T$. That is, fixing some initialization scale $\alpha > 0$, our upper bound on $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$ grows exponentially as a function of $T$.
+One will observe that the resulting bound is worse than than that we derived on $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$, as there is an exponential dependence on the finite time horizon $T$. That is, fixing some initialization scale $\alpha > 0$, our upper bound on $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$ grows exponentially as a function of $T$.
 
-The final bound we would like to prove is that on the distance between the gradient flow paths of $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$: $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) -  \boldsymbol{\bar{w}}_{\alpha}(t) \| = \mathcal{O}(1/\alpha^2)$. This bound tells us that in the limit $\alpha \rightarrow \infty$, the gradient flow of $F_{\alpha}(\boldsymbol{w})$ is equivalent to that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at any time $t \geq 0$, where $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{\bar{w}}_{\alpha}(0) = \boldsymbol{w}_0$. 
+The final bound we would like to prove is that on the distance between the gradient flow paths of $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$, $\sup_{t \in [0, T]} \| \boldsymbol{w}_{\alpha}(t) -  \boldsymbol{\bar{w}}_{\alpha}(t) \| = \mathcal{O}(1/\alpha^2)$. This bound tells us that in the limit $\alpha \rightarrow \infty$, the gradient flow of $F_{\alpha}(\boldsymbol{w})$ is equivalent to that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at any time $t \geq 0$, where $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{\bar{w}}_{\alpha}(0) = \boldsymbol{w}_0$. 
 
 Analogous to the function $\Delta(t): \mathbb{R}_+ \rightarrow 
 \mathbb{R}_+$ in the previous portion of our proof, we start by defining $\delta(t) := \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2$ for each $t \geq 0$. We approach the problem of bounding $\delta(t)$ on the interval $[0, T]$ by deriving a bound on $\delta'(t)$. 
 
-Our first step in finding a bound on $\delta'(t)$ is very similar to that used in the previous portion of our proof. In particular, we know that $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{\bar{w}}_{\alpha}(0) = \boldsymbol{w}_0$, and so $\delta(0) = 0$. Moreover, from our computations of $y'(t)$ and $\bar{y}'(t)$ in Section \ref{prelim}, we know that $\boldsymbol{w}'_{\alpha}(t) = - \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(t)) = \frac{1}{\alpha} Dh(\boldsymbol{w}_{\alpha}(t))^T \nabla R(y(t))$ as well as $\boldsymbol{\bar{w}}'_{\alpha}(t) = - \nabla \bar{F}_{\alpha}(\boldsymbol{\bar{w}}_{\alpha}(t)) = \frac{1}{\alpha} Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(\bar{y}(t))$ for every $t \geq 0$. As a result, we get the following bound on $\delta'(t)$ for each $t \geq 0$:
+Our first step in finding a bound on $\delta'(t)$ is very similar to that used in the previous portion of our proof. In particular, we know that $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{\bar{w}}_{\alpha}(0) = \boldsymbol{w}_0$, and so $\delta(0) = 0$. Moreover, from our computations of $y'(t)$ and $\bar{y}'(t)$ in Section \ref{prelim}, we know that $\boldsymbol{w}'_{\alpha}(t) = - \nabla F_{\alpha}(\boldsymbol{w}_{\alpha}(t)) = - \frac{1}{\alpha} Dh(\boldsymbol{w}_{\alpha}(t))^T \nabla R(y(t))$ as well as $\boldsymbol{\bar{w}}'_{\alpha}(t) = - \nabla \bar{F}_{\alpha}(\boldsymbol{\bar{w}}_{\alpha}(t)) = -\frac{1}{\alpha} Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(\bar{y}(t))$ for every $t \geq 0$. As a result, we get the following bound on $\delta'(t)$ for each $t \geq 0$:
 \begin{align*}
     \delta'(t) =& \frac{d}{dt} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2\\
     =& \frac{d}{dt} \left\Vert \int_0^t \boldsymbol{w}_{\alpha}'(s) - \boldsymbol{\bar{w}}_{\alpha}'(s) \ ds \right\Vert_2  & \text{Fundamental Theorem of Calculus}\\
@@ -282,7 +300,7 @@ Substituting in our particular expressions for $\boldsymbol{w}_{\alpha}'(t)$ and
     &+ \|Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(y(t)) - Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(\bar{y}(t)) \|_2\\
     &= \frac{1}{\alpha} \bigg( \|(Dh(\boldsymbol{w}_{\alpha}(t))^T -  Dh(\boldsymbol{w}_{\alpha}(0))^T)\nabla R(y(t)) \|_2 + \|Dh(\boldsymbol{w}_{\alpha}(0))^T( \nabla R(y(t)) - \nabla R(\bar{y}(t)) \|_2 \bigg)
 \end{align*}
-The inequality on the second line follows from adding and subtracting a term of $ Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(y(t))$ and then invoking the triangle inequality for the $\ell^2$ norm. In order to further bound $\delta'(t)$, we use the fact that $Dh(\boldsymbol{w}): \mathbb{R}^p \rightarrow \mathcal{F}$ is a continuous, linear operator for each $\boldsymbol{w} \in \mathbb{R}^p$, and thus so is its adjoint $Dh(\boldsymbol{w})^T$, where both $\mathbb{R}^p$ and $\mathcal{F}$ are normed vector spaces. Consequently, we have that for each $f \in \mathcal{F}$, $\|Dh(\boldsymbol{w})^T f\|_2  \leq \| Dh(\boldsymbol{w})^T \| \| f \|_{\mathcal{F}}$, where $\| Dh(\boldsymbol{w})^T \|$ denotes the operator norm of $Dh(\boldsymbol{w})^T$. Also, we will use the fact that for $Dh$ a continuous, linear operator, then $\| Dh(\boldsymbol{w}) \| = \| Dh(\boldsymbol{w})^T \|$. Putting together all of these pieces, we have
+The inequality on the second line follows from adding and subtracting a term of $ Dh(\boldsymbol{w}_{\alpha}(0))^T \nabla R(y(t))$ and then invoking the triangle inequality for the $\ell^2$ norm. In order to further bound $\delta'(t)$, we use the fact that $Dh(\boldsymbol{w}): \mathbb{R}^p \rightarrow \mathcal{F}$ is a continuous, linear operator for each $\boldsymbol{w} \in \mathbb{R}^p$, and thus so is its adjoint $Dh(\boldsymbol{w})^T$, where both $\mathbb{R}^p$ and $\mathcal{F}$ are normed vector spaces. Consequently, we have that for each $f \in \mathcal{F}$, $\|Dh(\boldsymbol{w})^T f\|_2  \leq \| Dh(\boldsymbol{w})^T \| \| f \|_{\mathcal{F}}$, where $\| Dh(\boldsymbol{w})^T \|$ denotes the operator norm of $Dh(\boldsymbol{w})^T$. Also, we will use the fact that for $Dh$ a continuous, linear operator, then $\| Dh(\boldsymbol{w}) \| = \| Dh(\boldsymbol{w})^T \|$. Putting all of these pieces together, we have
 \begin{align*}
     \delta'(t) &\leq \frac{1}{\alpha} \bigg(\|Dh(\boldsymbol{w}_{\alpha}(t))^T -  Dh(\boldsymbol{w}_{\alpha}(0))^T\| \|\nabla R(y(t)) \|_{\mathcal{F}} + \|Dh(\boldsymbol{w}_{\alpha}(0))^T\| \| \nabla R(y(t)) - \nabla R(\bar{y}(t)) \|_{\mathcal{F}}  \bigg)\\
     &=\frac{1}{\alpha} \bigg(\|Dh(\boldsymbol{w}_{\alpha}(t)) -  Dh(\boldsymbol{w}_{\alpha}(0))\| \|\nabla R(y(t)) \|_{\mathcal{F}} + \|Dh(\boldsymbol{w}_{\alpha}(0))\| \| \nabla R(y(t)) - \nabla R(\bar{y}(t)) \|_{\mathcal{F}}  \bigg).
@@ -301,7 +319,7 @@ Combining these two bounds, we have
 for some constant $C \geq 0$, for each $t \geq 0$. Thus, we conclude that $\sup_{t \in [0, T]} \delta'(t) \leq C/\alpha^2$. And by our previous justification that $\delta(0) = 0$, then it holds that for each $t \in [0, T]$,
 \begin{align*}
     \delta(t) &= \int_0^t \delta'(s) \ ds & \text{Fundamental Theorem of Calculus}\\
-    &\leq \int_0^t \sup_{\tilde{t} \in [0, T]} \delta'(\tilde{t}) \ ds & \delta'(s) \leq \sup_{\tilde{t} \in [0, T]} \delta'(\tilde{t}), \ \forall s \in [0, T] \\
+    &\leq \int_0^t \sup_{\tilde{t} \in [0, T]} \delta'(\tilde{t}) \ ds\\
     &= t \sup_{\tilde{t} \in [0, T]} \delta'(\tilde{t})\\
     &\leq T \sup_{\tilde{t} \in [0, T]} \delta'(\tilde{t}) \leq T \cdot C/\alpha^2.
 \end{align*}
@@ -313,9 +331,9 @@ This gives us our desired result
 We have demonstrated each of the three bounds stated in Theorem \ref{finitehorizon}, and so we conclude our proof.
 \end{proof}
 
-So far, we have given a general characterization of lazy training that, while beneficial in the theoretical sense, is of little practical use. To summarize our results from Theorem \ref{finitehorizon}, we showed that at any time $t \geq 0$, the gradient flow path of $F_{\alpha}(\boldsymbol{w})$ at time $t$ is equivalent to that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at time $t$ as $\alpha \rightarrow \infty$. Likewise, we demonstrated that for each $t \geq 0$, the original scaled model $\alpha h$, which is not a priori convex in $\boldsymbol{w} \in \mathbb{R}^p$, evaluated at $\boldsymbol{w}_{\alpha}(t)$ is equivalent to the linearized scaled model $\alpha \bar{h}$ evaluated at $\boldsymbol{\bar{w}}_{\alpha}(t)$ as $\alpha \rightarrow \infty$. Ultimately, these statements tell us that in the $\alpha \rightarrow \infty$ limit, the limit reached by gradient flow on $F_{\alpha}$ and $\bar{F}_{\alpha}$ are equivalent, $\lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t) = \lim_{t \to \infty} \boldsymbol{\bar{w}}_{\alpha}(t)$, as are the models $\alpha h$ and $\alpha \bar{h}$ evaluated at $\lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t) = \lim_{t \to \infty} \boldsymbol{\bar{w}}_{\alpha}(t)$. And so we have shown that lazy training as we presented it in Section \ref{introduction} occurs as the factor by which we are scaling the model output grows to infinity. If the model $h$ is positive homogeneous, we have equivalently shown that lazy training occurs when the scale of the initialization $\boldsymbol{w}_{\alpha}(0) = \alpha \boldsymbol{w}_0$ grows to infinity.
+So far, we have given a general characterization of lazy training that, while beneficial in the theoretical sense, may be futile in practice. To summarize our results from Theorem \ref{finitehorizon}, we have shown that at any time $t \geq 0$, the gradient flow path of $F_{\alpha}(\boldsymbol{w})$ at time $t$ is equivalent to that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at time $t$ as $\alpha \rightarrow \infty$. Likewise, we demonstrated that for each $t \geq 0$, the original scaled model $\alpha h$, which is not a priori convex in $\boldsymbol{w} \in \mathbb{R}^p$, evaluated at $\boldsymbol{w}_{\alpha}(t)$ is equivalent to the linearized scaled model $\alpha \bar{h}$ evaluated at $\boldsymbol{\bar{w}}_{\alpha}(t)$ as $\alpha \rightarrow \infty$. Ultimately, these statements tell us that in the $\alpha \rightarrow \infty$ limit, the limit reached by gradient flow on $F_{\alpha}$ and $\bar{F}_{\alpha}$ are equivalent, $\lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t) = \lim_{t \to \infty} \boldsymbol{\bar{w}}_{\alpha}(t)$, as are the models $\alpha h$ and $\alpha \bar{h}$ evaluated at $\lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t) = \lim_{t \to \infty} \boldsymbol{\bar{w}}_{\alpha}(t)$. And so we have shown that lazy training as we presented it in Section \ref{introduction} occurs as the factor by which we are scaling the model output grows to infinity. If the model $h$ is positive homogeneous, we have equivalently shown that lazy training occurs when the scale of the initialization $\boldsymbol{w}_{\alpha}(0) = \alpha \boldsymbol{w}_0$ grows to infinity.
 
-Why this result is poorly suited for practical applications, though, is due to the dependence of our bounds on the time horizon $T$. Expressly, for large times $t$ we would need a very large initialization scale $\alpha > 0$ to see the convergence of $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$ and $\alpha h(\boldsymbol{w}_{\alpha}(t))$ to $\alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t))$ in the respective norms within some small threshold $\epsilon > 0$. And since to approximate the limit reached by gradient flow one must consider large $t$, this makes comparing the gradient flow limits of $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$ onerous. We address this problem with Theorem \ref{finitehorizon}, which, by making stronger regularity assumptions on the model $h$ and loss $R$, extends the bounds we proved in Theorem \ref{finitehorizon} to be uniform in time $t \geq 0$.
+Why this result is poorly suited for practical applications, though, is due to the dependence of our bounds on the time horizon $T$. Expressly, for large times $t$ we would need a very large initialization scale $\alpha > 0$ to see the convergence of $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$ and $\alpha h(\boldsymbol{w}_{\alpha}(t))$ to $\alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t))$ in the respective norms within some small threshold $\epsilon > 0$. And since to approximate the limit reached by gradient flow one must consider large $t$, this makes comparing the gradient flow limits of $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$ onerous. We address this problem with Theorem \ref{uniformbound}, which, by making stronger regularity assumptions on the model $h$ and loss $R$, extends the bounds we proved in Theorem \ref{finitehorizon} to be uniform in time $t \geq 0$.
 
 
 \subsubsection{Model Generalization}
@@ -326,22 +344,22 @@ In Proposition \ref{generalization}, Chizat and colleagues address this question
 \begin{manualproposition}{A.1}\label{generalization}
 Assume that the results of Theorem \ref{finitehorizon} hold. In particular, for some constants $C_1, C_2 > 0$ it holds that $\| \boldsymbol{w}_{\alpha}(T) - \boldsymbol{\bar{w}}_{\alpha}(T) \|_2 \leq C_1\log(\alpha)/\alpha^2$ as well $\| \boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2 \leq C_2\log(\alpha)/\alpha$. Assume moreover that there exists a set $\mathcal{X} \subset \mathbb{R}^d$ such that $M_1 := \sup_{\boldsymbol{x} \in \mathcal{X}} \| D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \| < \infty$ and $M_2 := \sup_{\boldsymbol{x} \in \mathcal{X}} \text{Lip}( \boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})) < \infty$. Then it holds 
 \begin{align*}
-    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq C \frac{\log(\alpha)}{\alpha}\left(M_1 + \frac{1}{2}C\cdot M_2 \cdot \log(\alpha) \right) \longrightarrow 0 \quad \text{as $\alpha \longrightarrow \infty$}.
+    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{\log(\alpha)}{\alpha}\left(C_1 \cdot M_1 + \frac{1}{2}C_2^2 \cdot M_2 \cdot \log(\alpha) \right) \longrightarrow 0 \quad \text{as $\alpha \longrightarrow \infty$}.
 \end{align*}
 \end{manualproposition}
 
 \begin{proof}
-To start, we clarify that, unlike in Theorem \ref{finitehorizon}, the distance between $\alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ and $\alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x})$ is measured in the $\ell^2$ norm for $\mathbb{R}^k$, not the Hilbert space $\mathcal{F}$ norm, since the functions $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ and $\bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x})$ are evaluated at a particular input $\boldsymbol{x} \in \mathcal{X}$. For the same reason, $D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \in \mathbb{R}^{k \times d}$ is a matrix rather than a function $D_{\boldsymbol{w}}h(\boldsymbol{w}_0): \mathbb{R}^p \rightarrow \mathcal{F}$, and so $\| D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \|$ is taken with respect to the matrix norm $\| \cdot \|_{k, d}$.
+To start, we clarify that, unlike in Theorem \ref{finitehorizon}, the distance between $\alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ and $\alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x})$ is measured in the $\ell^2$ norm for $\mathbb{R}^k$, not the Hilbert space $\mathcal{F}$ norm, since the functions $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ and $\bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x})$ are evaluated at a particular input $\boldsymbol{x} \in \mathcal{X}$. For the same reason, $D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \in \mathbb{R}^{k \times p}$ is a matrix rather than a function $D_{\boldsymbol{w}}h(\boldsymbol{w}_0): \mathbb{R}^p \rightarrow \mathcal{F}$, and so $\| D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \|$ is taken with respect to the matrix norm $\| \cdot \|_{k, p}$.
 
 Now that we cleared up the statement of the proposition, we appeal to the properties of the supremum to split the quantity that we wish to bound into two ancillary quantities:
 \begin{align*}
-    &\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2\\
-    \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \bigg( \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 + \| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \bigg) & \text{triangle inequality}\\
-    \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 + \sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2.
+    &\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2\\
+    \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \bigg( \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 + \| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \bigg) & \text{triangle inequality}\\
+    \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 + \sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2.
 \end{align*}
 And so we see that it suffices to bound each term separately.
 
-Let us start with the first term $\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|$. One will recall from Section \ref{prelim} that $\bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) = f(\boldsymbol{w}_0) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0)$ is simply equal to the first-order approximation of $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ about $\boldsymbol{w} = \boldsymbol{w}_0$. Therefore, for each fixed $\boldsymbol{x} \in \mathcal{X}$, writing $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) = f(\boldsymbol{w}_0) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) + \mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$, we have that $\| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 = \alpha \|\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})\|_2$, where $\mathcal{R}(\cdot, \boldsymbol{x}): \mathbb{R}^d \rightarrow \mathbb{R}^k$ is the Taylor remainder of our approximation $\bar{f}$. And so we see that if we can bound the norm of the remainder term $\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ for $\boldsymbol{x} \in \mathcal{X}$, then we have a bound on $\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|$.
+Let us start with the first term $\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2$. One will recall from Section \ref{prelim} that $\bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) = f(\boldsymbol{w}_0) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0)$ is simply equal to the first-order approximation of $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ about $\boldsymbol{w} = \boldsymbol{w}_0$. Therefore, for each fixed $\boldsymbol{x} \in \mathcal{X}$, writing $f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) = f(\boldsymbol{w}_0) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) + \mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$, we have that $\| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 = \alpha \|\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})\|_2$, where $\mathcal{R}(\cdot, \boldsymbol{x}): \mathbb{R}^p \rightarrow \mathbb{R}^k$ is the Taylor remainder of our approximation $\bar{f}$. And so we see that if we can bound the norm of the remainder term $\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$ for $\boldsymbol{x} \in \mathcal{X}$, then we have a bound on $\sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2$.
 
 In order to bound this remainder term, let us define the function $g: \mathbb{R} \rightarrow \mathbb{R}^k$ such that $g(t) = f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x})$. Note that since $\boldsymbol{w} \mapsto f(\boldsymbol{w}, \boldsymbol{x})$ is differentiable, by assumption, then $g(t)$ is differentiable in $t \in \mathbb{R}$. And so by the Fundamental Theorem of Calculus, we have
 \begin{align*}
@@ -359,34 +377,34 @@ However, by subtracting the term $D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsym
 \begin{align*}
     f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \leq \int_0^1 \bigg( D_{\boldsymbol{w}}f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x}) - D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \bigg) (\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) \ dt.
 \end{align*}
-And so to place a bound on the norm of the Taylor remainder $\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$, we must bound the norm of the right hand side of the above inequality. Exploiting the properties of the norm, we have
+And so to place a bound on the norm of the Taylor remainder $\mathcal{R}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})$, we must bound the norm of the right-hand side of the prior inequality. Exploiting the properties of the norm, we have
 \begin{align*}
-    \| f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})\| &\leq \left\Vert \int_0^1 \bigg( D_{\boldsymbol{w}}f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x}) - D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \bigg) (\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) \ dt \right\Vert_2\\
+    \| f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x})\|_2 &\leq \left\Vert \int_0^1 \bigg( D_{\boldsymbol{w}}f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x}) - D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \bigg) (\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) \ dt \right\Vert_2\\
     &\leq \int_0^1 \left\Vert \bigg( D_{\boldsymbol{w}}f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x}) - D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \bigg)  (\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0) \right\Vert_2 \ dt\\
     &\leq \int_0^1 \|D_{\boldsymbol{w}}f(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0), \boldsymbol{x}) - D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x}) \|  \|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2 \ dt\\
     &\leq \int_0^1 \text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x}))\|(\boldsymbol{w}_0 + t(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0)) - \boldsymbol{w}_0 \|_2 \|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2 \ dt\\
     &= \text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})) \int_0^1 t\|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2 \ dt\\
     &=\frac{1}{2}\text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})) \|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2. 
 \end{align*}
-In particular, for the third inequality we invoke the property of the matrix norm $\|A\boldsymbol{v}\|_k \leq \|A\|_{k, d} \| \boldsymbol{v} \|_d$. And for the fourth inequality, we use the result from Theorem \ref{finitehorizon} that the map $\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is Lipschitz on some closed Euclidean ball containing the gradient flow path $\boldsymbol{w}_{\alpha}(t)$, $0 \leq t \leq T$. More specifically, by Theorem \ref{finitehorizon} we know that $\sup_{t \in [0, T]}\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$, and so $D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is locally Lipschitz, by assumption, on some closed Euclidean ball containing the gradient flow path $\boldsymbol{w}_{\alpha}(t)$, $0 \leq t \leq T$; this implies $D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is Lipschitz on the Euclidean ball. As a consequence of this bound on the norm of the Taylor remainder,
+In particular, for the third inequality we invoke the property of the matrix norm $\|A\boldsymbol{v}\|_k \leq \|A\|_{k, p} \| \boldsymbol{v} \|_p$. And for the fourth inequality, we use the result from Theorem \ref{finitehorizon} that the map $\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is Lipschitz on some closed Euclidean ball containing the gradient flow path $\boldsymbol{w}_{\alpha}(t)$, $0 \leq t \leq T$. More specifically, by Theorem \ref{finitehorizon} we know that $\sup_{t \in [0, T]}\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$, and so $D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is locally Lipschitz, by assumption, on some closed Euclidean ball containing the gradient flow path $\boldsymbol{w}_{\alpha}(t)$, $0 \leq t \leq T$; this implies $D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})$ is Lipschitz on the Euclidean ball. As a consequence of this bound on the norm of the Taylor remainder,
 \begin{align*}
-    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \| \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \frac{\alpha}{2}\text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})) \|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2\\
+    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq& \sup_{\boldsymbol{x} \in \mathcal{X}} \frac{\alpha}{2}\text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x})) \|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2\\
     \leq& \frac{\alpha}{2}\|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2  \sup_{\boldsymbol{x} \in \mathcal{X}}\text{Lip}(\boldsymbol{w} \mapsto D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x}))\\
     \leq& \frac{\alpha}{2}M_2\|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2.
 \end{align*}
 Lastly, appealing to our assumption that the bounds we derived in Theorem \ref{finitehorizon} indeed hold, then we have $\|\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0 \|_2^2 \leq C_2^2 \log(\alpha)^2/\alpha^2$. Consequently, we attain
 \begin{align*}
-    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \| \leq \frac{M_2C_2^2 \log(\alpha)^2}{2\alpha}.
+    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{M_2C_2^2 \log(\alpha)^2}{2\alpha}.
 \end{align*}
 Notice that for this first bound, we only used information about how far the gradient flow path $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ is from its initialization $\boldsymbol{w}_{\alpha}(0) = \boldsymbol{w}_0$ at time $T > 0$ and not how far the two gradient flow paths $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ and $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$ are from one another at time $T$. The second term we bound will capture the distance between these two gradient flow paths.
 
 Specifically, we wish to derive a bound on $\sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2$. By the definition of the linearized model $\bar{f}(\boldsymbol{w}, \boldsymbol{x})$, we have 
 \begin{align*}
-    &\sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2\\
+    &\sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2\\
     =& \sup_{\boldsymbol{x} \in \mathcal{X}} \alpha\| (f(\boldsymbol{w}_0, \boldsymbol{x}) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) - \boldsymbol{w}_0)) - (f(\boldsymbol{w}_0, \boldsymbol{x}) + D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{\bar{w}}_{\alpha}(T) - \boldsymbol{w}_0)) \|_2\\
     =& \sup_{\boldsymbol{x} \in \mathcal{X}} \alpha \|D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) -  \boldsymbol{\bar{w}}_{\alpha}(T)) \|_2.
 \end{align*}
-And so by the properties of the matrix norm $\| \cdot \|_{k, d}$, we have
+And so by the properties of the matrix norm $\| \cdot \|_{k, p}$, we have
 \begin{align*}
     \sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 =& \sup_{\boldsymbol{x} \in \mathcal{X}} \alpha \|D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})(\boldsymbol{w}_{\alpha}(T) -  \boldsymbol{\bar{w}}_{\alpha}(T)) \|_2\\
     \leq& \alpha \|\boldsymbol{w}_{\alpha}(T) -  \boldsymbol{\bar{w}}_{\alpha}(T) \|_2 \sup_{\boldsymbol{x} \in \mathcal{X}} \|D_{\boldsymbol{w}}f(\boldsymbol{w}_0, \boldsymbol{x})\|\\
@@ -394,55 +412,224 @@ And so by the properties of the matrix norm $\| \cdot \|_{k, d}$, we have
 \end{align*}
 Lastly, by our bound from Theorem \ref{finitehorizon} on the distance between the gradient flow paths of $F_{\alpha}(\boldsymbol{w})$, $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$, and $\bar{F}_{\alpha}(\boldsymbol{w})$, $(\boldsymbol{\bar{w}}_{\alpha}(t))_{t \geq 0}$, we deduce
 \begin{align*}
-     \sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), x) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{M_1C_1 \log(\alpha)}{\alpha} .
+     \sup_{\boldsymbol{x} \in \mathcal{X}}\| \alpha \bar{f}(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{M_1C_1 \log(\alpha)}{\alpha} .
 \end{align*}
 
 Altogether, we have proven 
 \begin{align*}
-    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{M_2C_2^2 \log(\alpha)^2}{2\alpha} + \frac{M_1C_1 \log(\alpha)}{\alpha},
+    \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \leq \frac{M_1C_1 \log(\alpha)}{\alpha} + \frac{M_2C_2^2 \log(\alpha)^2}{2\alpha},
 \end{align*}
 which implies that 
 \begin{align*}
     \sup_{\boldsymbol{x} \in \mathcal{X}} \| \alpha f(\boldsymbol{w}_{\alpha}(T), \boldsymbol{x}) - \alpha \bar{f}(\boldsymbol{\bar{w}}_{\alpha}(T), \boldsymbol{x}) \|_2 \longrightarrow 0 \quad \text{as} \quad \alpha \longrightarrow \infty.
 \end{align*}
 \end{proof}
-And so we have shown that for a certain subset $\mathcal{X}$ of the input space $\mathbb{R}^d$ on which the derivative of $f$ at $\boldsymbol{w}_0$ has bounded norm and $\text{Lip}(\boldsymbol{w} \rightarrow D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x}))$ is bounded, $\alpha f(\boldsymbol{w}, \boldsymbol{x})$ indeed generalizes like the linearized model $\alpha \bar{f}(\boldsymbol{w}, \boldsymbol{x})$ in limit $\alpha \rightarrow \infty$.
+And so we have shown that for a certain subset $\mathcal{X}$ of the input space $\mathbb{R}^d$ on which the derivative of $f$ at $\boldsymbol{w}_0$ has bounded matrix norm and $\text{Lip}(\boldsymbol{w} \rightarrow D_{\boldsymbol{w}}f(\boldsymbol{w}, \boldsymbol{x}))$ is bounded, $\alpha f(\boldsymbol{w}, \boldsymbol{x})$ indeed generalizes like the linearized model $\alpha \bar{f}(\boldsymbol{w}, \boldsymbol{x})$ in limit $\alpha \rightarrow \infty$.
 
-\subsection{Extending to Uniform-time Bounds}
+\subsection{Extending to Uniform-time Bounds}\label{extenduniform}
 
-In Section \ref{finitebounds} we delineated the conditions under which lazy training occurs and provided mathematical characterizations for lazy training that build upon our intuitive understanding from Sections \ref{introduction} and \ref{prelim}. Still, from the practictioner's perspective, the results we have presented are of little utility. Specifically, each of the bounds in Theorem \ref{finitehorizon} is dependent on a finite time horizon $T > 0$, meaning that the theoretical convergence we proved may be difficult to observe in practice for large time $t > 0$. As we pointed out, this is problematic because in order to approximate the limit of the gradient flow paths $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$, we must observe $\boldsymbol{w}_{\alpha}(t)$ and $\boldsymbol{\bar{w}}_{\alpha}(t)$ for large $t \geq 0$.
+In Section \ref{finitebounds} we delineated the conditions under which lazy training occurs and provided mathematical characterizations for lazy training that build upon our intuitive understanding from Sections \ref{introduction} and \ref{prelim}. Still, from the practictioner's perspective, the results we have presented are of limited utility. Specifically, each of the bounds in Theorem \ref{finitehorizon} is dependent on a finite time horizon $T > 0$, meaning that the theoretical convergence we proved may be difficult to observe in practice for large time $t > 0$. As we pointed out, this is problematic because in order to approximate the limit of the gradient flow paths $F_{\alpha}(\boldsymbol{w})$ and $\bar{F}_{\alpha}(\boldsymbol{w})$, we must observe $\boldsymbol{w}_{\alpha}(t)$ and $\boldsymbol{\bar{w}}_{\alpha}(t)$ for large $t \geq 0$.
 
-To partially remedy this drawback of Theorem \ref{finitehorizon}, Chizat and colleagues impose additional assumptions on the model $h$ and loss $R$ in order to achieve uniform convergence in time $t > 0$. These assumptions are summarized by Theorem \ref{uniformbound}:
+To partially remedy this drawback of Theorem \ref{finitehorizon}, Chizat and colleagues impose additional assumptions on the model $h$ and loss $R$ in order to achieve uniform convergence in time $t \geq 0$. These assumptions are summarized by Theorem \ref{uniformbound}:
 \begin{manualtheorem}{2.4}\label{uniformbound}
-Consider the $M$-smooth and $m$-strongly convex loss $R$ with minimizer $y^{\star}$ and condition number $\kappa := M/m$. Assume that $\sigma_{\text{min}}$, the smallest singular value of $Dh(\boldsymbol{w}_0)^T$, is positive and that the initialization satisfies $\| h(\boldsymbol{w}_0) \| \leq C_0:= \sigma_{\text{min}}^3/(32\kappa^{3/2} \| Dh(\boldsymbol{w}_0) \| \text{Lip}(Dh))$, where $\text{Lip}(Dh)$ is the Lipschitz constant of $Dh$. If $\alpha > \| y^{\star} \| / C_0$, then for $t \geq 0$, it holds
+Consider the $M$-smooth and $m$-strongly convex loss $R$ with minimizer $y^{\star}$ and condition number $\kappa := M/m$. Assume that $\sigma_{\text{min}}$, the smallest singular value of $Dh(\boldsymbol{w}_0)^T$, is positive and that the initialization satisfies $\| h(\boldsymbol{w}_0) \|_{\mathcal{F}} \leq C_0:= \sigma_{\text{min}}^3/(32\kappa^{3/2} \| Dh(\boldsymbol{w}_0) \| \text{Lip}(Dh))$, where $\text{Lip}(Dh)$ is the Lipschitz constant of $Dh$. If $\alpha > \| y^{\star} \|_{\mathcal{F}} / C_0$, then for $t \geq 0$, it holds
 \begin{align*}
-    \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - y^{\star} \| \leq \sqrt{\kappa} \| \alpha h(\boldsymbol{w}_0) - y^{\star} \| \exp( -m \sigma_{\text{min}}^2 t/4).
+    \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - y^{\star} \|_{\mathcal{F}} \leq \sqrt{\kappa} \| \alpha h(\boldsymbol{w}_0) - y^{\star} \|_{\mathcal{F}} \exp( -m \sigma_{\text{min}}^2 t/4).
 \end{align*}
-If moreover $h(\boldsymbol{w}_0) = 0$, it holds as $\alpha \rightarrow \infty$, $\sup_{t \geq 0} \left\Vert \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \right\Vert = \mathcal{O}(1/\alpha)$,
+If moreover $h(\boldsymbol{w}_0) = 0$, it holds as $\alpha \rightarrow \infty$, $\sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$,
 \begin{align*}
-    \sup_{t \geq 0} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \| = \mathcal{O}(1/\alpha) \quad \text{and} \quad  \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \| = \mathcal{O}(\log \alpha/\alpha^2).
+    \sup_{t \geq 0} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \|_{\mathcal{F}} = \mathcal{O}(1/\alpha) \quad \text{and} \quad  \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2 = \mathcal{O}(\log \alpha/\alpha^2).
 \end{align*}
 \end{manualtheorem}
-The first assumption the authors make is that the loss function $R$ is \enquote{nice} to the extent that it is both $M$-smooth and $m$-strongly convex. The even stronger assumption, though, is that $Dh(\boldsymbol{w}_0): \mathbb{R}^p \rightarrow \mathcal{F}$ is surjective, which can only be the case if the Hilbert space $\mathcal{F}$ us finite dimensional. An example of a problem which satisfies these conditions is the least-squares problem with model $h: \mathbb{R}^{2d} \rightarrow (\mathbb{R}^d)^*$: 
+The first assumption the authors make is that the loss function $R$ is \enquote{nice} to the extent that it is both $M$-smooth and $m$-strongly convex. Also, they require that $\boldsymbol{w} \mapsto Dh(\boldsymbol{w})$ is globally Lipschitz, whereas we only needed the operator to be locally Lipschitz for Theorem \ref{finitehorizon}. The strongest assumption by far, though, is that $Dh(\boldsymbol{w}_0): \mathbb{R}^p \rightarrow \mathcal{F}$ is surjective, which can only be the case if the Hilbert space $\mathcal{F}$ is finite-dimensional \cite{chizat2018lazy}. Professedly, these conditions are met only by very benign problems which we do not typically encounter in the contemporary field of deep learning.
+
+By introducing these additional assumptions, we see that Theorem \ref{uniformbound} indeed relaxes each of the bounds in Theorem \ref{finitehorizon} to be uniform in time $t \geq 0$. That is, Theorem \ref{uniformbound} tells us that the convergence of the gradient flow path $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$ and the corresponding model $\alpha h(\boldsymbol{w}_{\alpha}(t))$ to $\alpha \bar{h}(\boldsymbol{w}_{\alpha}(t))$ is uniform in $t \geq 0$ as $\alpha \rightarrow \infty$. Just as salient, Theorem \ref{uniformbound} also tells us that for sufficiently large $\alpha \geq 0$, the model  $\alpha h(\boldsymbol{w})$ evaluated along its gradient flow path $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ converges linearly to the global minimizer $y^{\star} \in \mathcal{F}$ of the loss $R$. Note that since $R$ is $m$-strongly convex, then it must be the case that $y^{\star}$ is unique. Considering that the objective function $F_{\alpha}(\boldsymbol{w})$ is not necessarily convex, the fact that we achieve convergence of the gradient flow to the global minimum of the loss is a remarkable result.
+
+Now that we have stated and provided motivation for Theorem \ref{uniformbound} by Chizat and colleagues, we consider their proof.
+
+\begin{proof}
+To begin, we define the closed Euclidean ball with radius $r_0 = \sigma_{\text{min}}/(2\text{Lip}(Dh))$ centered at $\boldsymbol{w}_0$, $B_{r_0}(\boldsymbol{w}_0) = \{ \boldsymbol{w} \in \mathbb{R}^p, \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2 \leq r_0 \}$. By our assumption that the map $\boldsymbol{w} \mapsto Dh(\boldsymbol{w})$ is [globally] Lipschitz, we know that for each $f \in \mathcal{F}$,
 \begin{align*}
-    h(\boldsymbol{w}) = f(\boldsymbol{w}, \boldsymbol{x}) = \langle \boldsymbol{\beta}_{\boldsymbol{w}}, \boldsymbol{x} \rangle, \quad \boldsymbol{\beta}_{\boldsymbol{w}} = \boldsymbol{w}_+^2 - \boldsymbol{w}_-^2, \quad \boldsymbol{w} = 
-    \begin{bmatrix}
-        \boldsymbol{w}_+ \\
-        \boldsymbol{w}_-
-    \end{bmatrix} 
-    \in \mathbb{R}^{2d}
+    \text{Lip}(Dh)^2 \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \|f \|_2^2 &\geq \|Dh(\boldsymbol{w}) - Dh(\boldsymbol{w}_0)\|^2 \|f\|_2^2\\
+    &\geq \|(Dh(\boldsymbol{w}) - Dh(\boldsymbol{w}_0))^Tf\|_2^2\\
+    &= \|Dh(\boldsymbol{w})^Tf - Dh(\boldsymbol{w}_0)^Tf\|_2^2\\
+    &\geq \left| \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - \|Dh(\boldsymbol{w})^Tf\|_2^2 \right|\\
+    &\geq  \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - \|Dh(\boldsymbol{w})^Tf\|_2^2, \quad \forall \boldsymbol{w} \in \mathbb{R}^p.
 \end{align*}
-and loss function
+By subtracting $\|Dh(\boldsymbol{w}_0)^Tf\|_2^2$ over to the left-hand side of the inequality, we have the bound
 \begin{align*}
-    R(f) = \mathbb{E}_{(\boldsymbol{x}, y) \sim \mathcal{D}}[(y - f(\boldsymbol{x}))^2] = \sum_{i=1}^N (y_i - f(\boldsymbol{x}_i))^2, \quad f \in \mathcal{F}
+    \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - \text{Lip}(Dh)^2 \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \|f \|_2^2, \quad \forall \boldsymbol{w} \in \mathbb{R}^p.
 \end{align*}
-Here, $\boldsymbol{v}^2$ denotes element-wise squaring of the vector $\boldsymbol{v} \in \mathbb{R}^{d}$, and $\mathcal{D}$ denotes the empirical distribution corresponding to training data $\{(\boldsymbol{x}_i, y_i) \}_{i=1}^N$. %with $N \geq n$%
+More specifically, for $\boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$ we know that $\| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \leq r_0^2 = \sigma_{\text{min}}^2/(4\text{Lip}(Dh)^2)$, and so
+\begin{align*}
+    \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
+\end{align*}
+And by our assumption that the smallest singular value of $Dh(\boldsymbol{w}_0)^T$ is $\sigma_{\text{min}}^2 > 0$, then we have a lower bound on the right-hand side of the inequality:
+\begin{align*}
+   \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq |Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2 \geq \sigma_{\text{min}}^2 \|f\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
+\end{align*}
+And so we have proven that $\forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$, it holds that
+\begin{align*}
+&f\Sigma(\boldsymbol{w})f  = \|Dh(\boldsymbol{w})^Tf\|_2^2  \geq (3/4) \sigma_{\text{min}}^2 \|f\|_2^2, \quad \forall f \in \mathcal{F}\\
+\implies& \Sigma(\boldsymbol{w}) \succeq (3/4) \sigma_{\text{min}}^2\text{Id}.
+\end{align*}
 
-By introducing these additional assumptions, we see that Theorem \ref{uniformbound} indeed relaxes each of the bounds from Theorem \ref{finitehorizon} to be uniform in time $t>0$. That is, Theorem \ref{uniformbound} tells us that the convergence of the gradient flow path $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$ and the corresponding model $\alpha h(\boldsymbol{w}_{\alpha}(t))$ to $\alpha \bar{h}(\boldsymbol{w}_{\alpha}(t))$ is uniform in $t > 0$ as $\alpha \rightarrow \infty$. Just as salient, Theorem \ref{uniformbound} also tells us that for sufficiently large $\alpha \geq 0$, the model $\alpha h(\boldsymbol{w}_{\alpha}(t))$ converges exponentially to a global minimizer $y^{\star}$ of the loss $R$ in the gradient flow limit $t \rightarrow \infty$. Considering that the objective function $F_{\alpha}(\boldsymbol{w})$ is not a priori convex, the fact that we achieve convergence of the gradient flow to a global minimum of the loss is a remarkable result.
+That is, we have shown that the smallest eigenvalue of the neural tangent kernel $\Sigma(\boldsymbol{w})$ on the set $B_{r_0}(\boldsymbol{w}_0)$ is strictly positive. Of course, the natural question to ask is how this result relates to the statements we wish to prove. This is clarified by the following lemma proven by Chizat and colleagues:
+\begin{manuallemma}{B.1}[Strongly-convex gradient flow in a time-dependent metric]\label{expconvergence}
+Let $F: \mathcal{F} \rightarrow \mathbb{R}$ be a $m$-strongly convex function with $M$-Lipschitz continuous gradient and with global minimizer $y^{\star}$. Let $\Sigma(t): \mathcal{F} \rightarrow \mathcal{F}$ be a time-dependent, continuous,  self-adjoint linear operator with eigenvalues lower bounded by $\lambda > 0$ for $0 \leq t \leq T$. Then the solutions on $[0, T]$ to the differential equation
+\begin{align*}
+    y'(t) = -\Sigma(t) \nabla F(y(t))
+\end{align*}
+satisfy, for $0 \leq t \leq T$,
+\begin{align*}
+    \|y(t) - y^{\star}\|_{\mathcal{F}} \leq (M/m)^{1/2}\|y(0) - y^{\star}\|_{\mathcal{F}}\exp(-m \lambda t).
+\end{align*}
+\end{manuallemma}
 
-Now that we have stated and expanded upon Theorem \ref{uniformbound} by Chizat and colleagues, we consider their proof of the result. Since the proof makes up the majority of the Appendix and is quite mathematically challenging, we settle for a basic overview. For more details, I encourage 
+Lemma \ref{expconvergence} tells us that since the scaled model evaluated along its gradient flow path, $y(t) = \alpha h(\boldsymbol{w}_{\alpha}(t))$, satisfies the differential equation
+\begin{align*}
+    \frac{d}{dt}y(t) = -\Sigma(\boldsymbol{w}_{\alpha}(t))\nabla R(y(t)),
+\end{align*}
+where the loss $R$ is $M$-smooth and $m$-strongly convex as well as $\Sigma(\boldsymbol{w}) \succeq (3/4) \sigma_{\text{min}}^2\text{Id}$, $\forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$, then we have that $y(t)$ converges linearly to the global minimizer of $R$, $y^{\star}$, $\forall t \in [0, T]$, where $T = \inf\{t \geq 0 \ | \ \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0\|_2 > r_0\}$. More intuitively, our previous result that $\Sigma(\boldsymbol{w}) \succeq (3/4) \sigma_{\text{min}}^2\text{Id}$, $\forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$ along with Lemma \ref{expconvergence} tell us that $y(t)$ converges linearly to $y^{\star}$ as long as the gradient flow path $\boldsymbol{w}_{\alpha}(t)$ remains in the ball $B_{r_0}(\boldsymbol{w}_0)$. 
 
-\section{Extensions of Lazy Training}\label{extensions}
+And so in order to prove the global convergence result we desire, we must find sufficient conditions such that $T = + \infty$, meaning that the gradient flow path never leaves the ball $B_{r_0}(\boldsymbol{w}_0)$. In order to do this, we first bound the norm of $\boldsymbol{w}'(t)$ on $t \in [0, T]$ as follows:
+\begin{align*}
+    \| \boldsymbol{w}'(t) \|_2 =& \frac{1}{\alpha} \|Dh(\boldsymbol{w}_{\alpha}(t)) \| \| \nabla R(y(t))\|_{\mathcal{F}} & \text{definition of $\boldsymbol{w}'(t)$ from Section \ref{prelim}} \\
+    \leq& \frac{M}{\alpha} \|Dh(\boldsymbol{w}_{\alpha}(t)) \|  \| y(t) - y^{\star} \|_{\mathcal{F}} & \text{$R$ is $M$-smooth}\\
+    \leq& \frac{2M}{\alpha} \|Dh(\boldsymbol{w}_0) \|  \| y(t) - y^{\star} \|_{\mathcal{F}}.
+\end{align*}
+Therefore, we have that for all $t \in [0, T]$,
+\begin{align*}
+    \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 =& \left\Vert \int_0^t \boldsymbol{w}_{\alpha}'(s) \ ds \right\Vert_2 \leq \int_0^t \| \boldsymbol{w}_{\alpha}'(s) \|_2 \ ds & \text{Fundamental Theorem of Calculus}\\
+    \leq& \frac{2M}{\alpha} \|Dh(\boldsymbol{w}_0) \| \int_0^t  \| y(t) - y^{\star} \|_{\mathcal{F}} \ ds\\
+    \leq& \frac{2M^{3/2}}{m^{1/2}\alpha} \|Dh(\boldsymbol{w}_0) \| \|y(0) - y^{\star} \|_{\mathcal{F}}\\ 
+    &\cdot\int_0^t  \exp(-(3m\sigma_{\text{min}}^2/4) \cdot s) \ ds & \text{Lemma \ref{expconvergence}}\\
+    \leq& \frac{8\kappa^{3/2}}{\alpha \sigma_{\text{min}}^2} \|Dh(\boldsymbol{w}_0) \| \|y(0) - y^{\star} \|_{\mathcal{F}}.
+\end{align*}
+Let us consider $\|y(0) - y^{\star} \|_{\mathcal{F}} \leq 2 \alpha C_0$. If this is the case, then the previous inequality implies
+\begin{align*}
+    &\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \leq \frac{8\kappa^{3/2}}{\alpha \sigma_{\text{min}}^2} \|Dh(\boldsymbol{w}_0) \| \|y(0) - y^{\star} \|_{\mathcal{F}} \leq \frac{16 C_0 \kappa^{3/2}}{ \sigma_{\text{min}}^2} \|Dh(\boldsymbol{w}_0) \| \leq \frac{\sigma_{\text{min}}}{2 \text{Lip}(Dh)} = r_0,
+\end{align*}
+meaning that $T = \inf\{t \geq 0 \ | \ \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0\|_2 > r_0\} = +\infty$, as we wished. That is, we have shown that for $y(0)$ satisfying  $\|y(0) - y^{\star} \|_{\mathcal{F}} \leq 2 \alpha C_0$,  the gradient flow path $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ remains in $B_{r_0}(\boldsymbol{w}_0)$ for all times $t \geq 0$, and we attain linear convergence of $\alpha h(\boldsymbol{w}_{\alpha}(t))$ to the global minimum $y^{\star}$ for all times $t \geq 0$. 
+
+Recall from the statement of Theorem \ref{uniformbound} that we assume $\| h(\boldsymbol{w}_0) \|_{\mathcal{F}} \leq C_0$ as well as $\alpha > \|y^{\star} \|_{\mathcal{F}}/C_0$. Therefore, we indeed have $\| y(0) - y^{\star} \|_{\mathcal{F}} =  \| \alpha h(\boldsymbol{w}_0) - y^{\star} \|_{\mathcal{F}} \leq \alpha \| h(\boldsymbol{w}_0) \|_{\mathcal{F}} + \| y^{\star} \|_{\mathcal{F}} <  2 \alpha C_0$. And so by our assumptions in Theorem \ref{expconvergence}, we have shown that we are guaranteed linear convergence to the global minimum for all times $t \geq 0$:
+\begin{align*}
+    \| y(t) - y^{\star} \|_{\mathcal{F}} \leq \sqrt{\kappa} \| \alpha h(\boldsymbol{w}_0) - y^{\star} \|_{\mathcal{F}} \exp(-3m\sigma_{\text{min}}^2t/4)  \leq \sqrt{\kappa} \| \alpha h(\boldsymbol{w}_0) - y^{\star} \|_{\mathcal{F}} \exp(-m\sigma_{\text{min}}^2t/4), \quad t \geq 0.
+\end{align*}
+
+Now to consider the uniform time bounds, let us suppose that the model $h$ is unbiased at its initialization,  $h(\boldsymbol{w}_0) = 0$. We claim that we have already proven the first bound $\sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$. To see that this is the case, recall that we showed for all $t \in [0, T] = [0, +\infty)$,
+\begin{align*}
+    \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \leq \frac{1}{\alpha} \left( \frac{8 \kappa^{3/2}}{\sigma_{\text{min}}^2} \| Dh(\boldsymbol{w}_0) \| \|y(0) - y^{\star} \|_{\mathcal{F}}\right) = \frac{1}{\alpha}\left( \frac{8 \kappa^{3/2}}{\sigma_{\text{min}}^2} \| Dh(\boldsymbol{w}_0) \| \|y^{\star}\|_{\mathcal{F}}\right).
+\end{align*}
+However, one will observe that the right-hand side of the inequality is independent of time $t \geq 0$, and so we obtain the desired result
+\begin{align*}
+    \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \leq \frac{1}{\alpha}\left( \frac{8 \kappa^{3/2}}{\sigma_{\text{min}}^2} \| Dh(\boldsymbol{w}_0) \| \|y^{\star}\|_{\mathcal{F}}\right) = \mathcal{O}(1/\alpha).
+\end{align*}
+That is, the gradient flow path of $F_{\alpha}(\boldsymbol{w})$, $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$, remains asymptotically fixed at its initialization $\boldsymbol{w}_{\alpha}(0) = \alpha \boldsymbol{w}_0$, and this convergence is uniform in time $t \geq 0$. 
+
+For the next result $\sup_{t \geq 0} \| \alpha h(\boldsymbol{w}_{\alpha}(t)) - \alpha \bar{h}(\boldsymbol{\bar{w}}_{\alpha}(t)) \|_{\mathcal{F}} = \| y(t) - \bar{y}(t) \|_{\mathcal{F}} = \mathcal{O}(1/\alpha)$, we must appeal to a second lemma formulated and proven by Chizat and colleagues:
+\begin{manuallemma}{B.2}[Stability Lemma]
+Let $R: \mathcal{F} \rightarrow \mathbb{R}_+$ be a $m$-strongly convex function and let $\Sigma(t)$ be a time-dependent positive definite operator on $\mathcal{F}$ such that $\Sigma(t) \succeq \lambda \text{Id}$ for $t \geq 0$. Consider the paths $y(t)$ and $\bar{y}(t)$ on $\mathcal{F}$ that solve for $t \geq 0$, 
+\begin{align*}
+    y'(t) = - \Sigma(t) \nabla R(y(t)) \qquad \text{and} \qquad \bar{y}'(t) = - \Sigma(0) \nabla R(\bar{y}(t)).
+\end{align*}
+Defining $K := \sup_{t \geq 0} \|(\Sigma(t) - \Sigma(0)) \nabla R(y(t))\|_{\mathcal{F}}$, it holds for $t \geq 0$, 
+\begin{align*}
+    \|y(t) - \bar{y}(t) \|_{\mathcal{F}} \leq \frac{K \|\Sigma(0) \|^{1/2}}{\lambda^{3/2}m}.
+\end{align*}
+\end{manuallemma}
+
+Once again, we have assumed that the loss function $R$ is $m$-strongly convex and we know that $\Sigma(t) = Dh(\boldsymbol{w}_{\alpha}(t))Dh(\boldsymbol{w}_{\alpha}(t))^T \succeq (3/4) \sigma_{\text{min}}^2 \text{Id}, \ \forall t \in [0, T] = [0, +\infty)$ from the previous portion of our proof.  Therefore, we can invoke the stability lemma to bound $\sup_{t \geq 0} \|y(t) - \bar{y}(t) \|_{\mathcal{F}}$. In our case, we have that the constant $K$ is upper bounded by
+\begin{align*}
+    K =& \sup_{t \geq 0} \|(\Sigma(t) - \Sigma(0)) \nabla R(y(t))\|_{\mathcal{F}}\\
+    \leq& \sup_{t \geq 0} \| \Sigma(t) - \Sigma(0)\| \| \nabla R(y(t))\|_{\mathcal{F}}\\
+    \leq& M \cdot \sup_{t \geq 0} \| \Sigma(t) - \Sigma(0)\|\|y(t) - y^{\star} \|_{\mathcal{F}} & \text{$R$ is $M$-smooth}\\
+    \leq& (2M \text{Lip}(h) \text{Lip}(Dh)) \cdot \sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \|y(t) - y^{\star} \|_{\mathcal{F}} & \text{Lip}(\Sigma) \leq 2 \cdot \text{Lip}(h) \text{Lip}(Dh) \\
+    \leq& \left(2\frac{M^{3/2}}{m^{1/2}} \cdot \|y(0) - y^{\star}\|_{\mathcal{F}} \cdot  \text{Lip}(h)\text{Lip}(Dh) \right) \cdot \sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 & \text{Lemma \ref{expconvergence}}\\
+    =& \left(2\frac{M^{3/2}}{m^{1/2}} \cdot \|y^{\star}\|_{\mathcal{F}} \cdot  \text{Lip}(h)\text{Lip}(Dh) \right) \cdot \sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2.
+\end{align*}
+Here, $\text{Lip}(h)$ denotes the Lipschitz constant of $h$ on the closed Euclidean ball $B_{r_0}(\boldsymbol{w}_0)$. More precisely, because $Dh$ is continuous on the compact set $B_{r_0}(\boldsymbol{w}_0)$, then $h$ is Lipschitz on $B_{r_0}(\boldsymbol{w}_0)$. Altogether, we can bound $\sup_{t \geq 0}\| y(t) - \bar{y}(t) \|_{\mathcal{F}}$ by
+\begin{align*}
+    \sup_{t \geq 0} \|y(t) - \bar{y}(t) \|_{\mathcal{F}} \leq \frac{K \|\Sigma(0) \|^{1/2}}{(3\sigma_{\text{min}}^2/4)^{3/2}m} \leq& \left( \frac{16\kappa^{3/2} \|\Sigma(0) \|^{1/2} \cdot  \text{Lip}(h)\text{Lip}(Dh) \cdot \|y^{\star} \|_{\mathcal{F}}}{\sigma_{\text{min}}^3} \right) \cdot \sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2.
+\end{align*}
+But we already know that $\sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 = \mathcal{O}(1/\alpha)$, and so the previous bound implies 
+\begin{align*}
+    \sup_{t \geq 0} \|y(t) - \bar{y}(t) \|_{\mathcal{F}} = \mathcal{O}(1/\alpha).
+\end{align*}
+
+Finally, it remains to prove the bound on the distance between the gradient flow path of $F_{\alpha}(\boldsymbol{w})$ and that of $\bar{F}_{\alpha}(\boldsymbol{w})$ at any time $t \geq 0$, $\sup_{t \geq 0} \|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2 = \mathcal{O}(\log(\alpha)/\alpha^2)$. In order to do so, we employ a strategy that we have used many times up to this point: bounding $\|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2$ by $\|\boldsymbol{w}_{\alpha}'(t) - \boldsymbol{\bar{w}}_{\alpha}'(t) \|_2$.
+In particular, we have that $\forall t \geq 0$,
+\begin{align*}
+    &\|\boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2\\ \leq&  \int_0^t \| \boldsymbol{w}_{\alpha}'(s) - \boldsymbol{\bar{w}}_{\alpha}'(s) \|_2 \ ds\\
+    \leq&  \int_0^{\infty} \| \boldsymbol{w}_{\alpha}'(t) - \boldsymbol{\bar{w}}_{\alpha}'(t) \|_2 \ dt\\
+    =& (1/\alpha) \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t))^T \nabla R(y(t))  - Dh(\boldsymbol{w}_0)^T \nabla R(\bar{y}(t)) \|_2 \ dt\\
+    \leq& (1/\alpha) \int_0^{\infty} \| (Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0))^T \nabla R(y(t)) \|_2 \ dt + (1/\alpha) \int_0^{\infty} \| Dh(\boldsymbol{w}_0)(\nabla R(y(t)) - \nabla R(\bar{y}(t))) \|_2 \ dt\\
+    \leq& (1/\alpha) \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt  + (1/\alpha) \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt.
+\end{align*}
+And so it suffices to show that each of
+\begin{align*}
+    \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt, \quad \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt
+\end{align*} is on the order of $\log(\alpha)/\alpha$. Starting with the first integral, we have
+\begin{align*}
+    &\int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt\\
+    \leq& \text{Lip}(Dh) \cdot \int_0^{\infty} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \|\nabla R(y(t))\|_{\mathcal{F}} \ dt & \text{$Dh$ is globally Lipschitz}\\
+    \leq& (M \cdot \text{Lip}(Dh)) \cdot \int_0^{\infty}  \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \| y(t) - y^{\star} \|_\mathcal{F} \ dt & \text{$R$ is $M$-smooth}\\
+    \leq& \left(M\sqrt{\kappa} \cdot \text{Lip}(Dh) \cdot \| y(0) - y^{\star} \|_{\mathcal{F}}\right) \cdot \int_0^{\infty}  \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2 \exp(-m\sigma_{\text{min}}^2t/4) \ dt & \text{linear convergence}\\
+    \leq& \frac{1}{\alpha}\left(\frac{8M\kappa^2}{ \sigma_{\text{min}}^2} \cdot \|Dh(\boldsymbol{w}_0) \| \cdot \text{Lip}(Dh) \cdot \|y^{\star} \|_{\mathcal{F}}^2 \right) \cdot \int_0^{\infty} \exp(-m\sigma_{\text{min}}^2t/4) \ dt & \text{bound on $\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{w}_0 \|_2$}\\
+    \leq& \frac{1}{\alpha}\left(\frac{32 \kappa^3}{ \sigma_{\text{min}}^4} \cdot \|Dh(\boldsymbol{w}_0) \| \cdot \text{Lip}(Dh) \cdot \|y^{\star} \|_{\mathcal{F}}^2 \right).
+\end{align*}
+Hence, we deduce 
+\begin{align*}
+    \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt = \mathcal{O}(1/\alpha),
+\end{align*}
+as we wanted to show. 
+
+For the sake of brevity, we do not fully work out the second integral, although we will explain how to bound it. In particular, the integral 
+\begin{align*}
+    \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt =  \| Dh(\boldsymbol{w}_0) \| \cdot \int_0^{\infty} \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt 
+\end{align*}
+can be split into an integral over $[0, t_0]$ and integral over $[t_0, + \infty)$, where $t_0 := 4 \log(\alpha)/(m\sigma_{\text{min}}^2)$. On the interval $[0, t_0]$, the authors use the fact that the loss function $R$ is $M$-smooth so that
+\begin{align*}
+    \| Dh(\boldsymbol{w}_0) \| \cdot \int_0^{t_0} \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt \leq \left( M \cdot \| Dh(\boldsymbol{w}_0) \| \right) \cdot \int_0^{t_0} \| y(t) - \bar{y}(t) \|_{\mathcal{F}} \ dt.  
+\end{align*}
+But from previously, we know that $\sup_{t \geq 0} \| y(t) - \bar{y}(t) \|_{\mathcal{F}} = \mathcal{O}(1/\alpha)$. And so, overall, the integral of $\|y(t) - \bar{y}(t) \|_{\mathcal{F}}$ over $[0, t_0]$ is $\mathcal{O}(\log(\alpha)/ \alpha)$.
+
+And for the second integral over $[t_0, + \infty)$, the authors use the \enquote{crude} bound (i.e. that which does not exploit the smoothness of $\nabla R$):
+\begin{align*}
+     \| Dh(\boldsymbol{w}_0) \| \cdot \int_{t_0}^{\infty} \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt \leq \| Dh(\boldsymbol{w}_0) \| \cdot \int_{t_0}^{\infty} \left( \|\nabla R(y(t))\|_{\mathcal{F}} + \| \nabla R(\bar{y}(t))\|_{\mathcal{F}} \right)  \ dt.
+\end{align*}
+Now, since $\nabla R$ decreases exponentially along both $y(t)$ and $\bar{y}(t)$, and by out particular choice of $t_0$, we get that the integral of $ \|\nabla R(y(t))\|_{\mathcal{F}} + \| \nabla R(\bar{y}(t))\|_{\mathcal{F}}$ over $[t_0, + \infty)$ is $\mathcal{O}(\log(\alpha)/ \alpha)$. Admittedly, our previous statement is quite loaded, and there are a few details one must work out to verify that this is the case.
+
+In summary, we have proven that $\forall t \geq 0$,  
+\begin{align*}
+    &\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2\\
+    \leq& \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt + \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt\\
+    =& \mathcal{O}(\log(\alpha)/ \alpha),
+\end{align*}
+which implies
+\begin{align*}
+   \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2 = \mathcal{O}(\log(\alpha)/\alpha).
+\end{align*}
+
+Therefore, we have shown the linear convergence of $y(t)$ to $y^{\star}$ as well as the uniform convergence in time $t \geq 0$ of $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{w}_0$, $y(t)$ to $\bar{y}(t)$, and $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$.
+\end{proof}
+
+\section{Applications \& Extensions of Lazy Training}\label{extensions}
+Although our presentation of lazy training is foremost theory driven, we wish to provide some intuition as to why lazy training is important from a practical perspective. Additionally, we will point out the limitations in the results of Chizat, Oyallon and Bach and discuss future work to better understand the role of lazy training in contemporary deep learning.
+
+As for the practical implications of lazy training, we will first discuss what it means to train in the limit $\alpha \rightarrow \infty$. Specifically, as we briefly mentioned in our proof of Theorem \ref{finitehorizon}, it is not difficult to show that under certain conditions on the model $h$ loss function $R$, the gradient flow $(\boldsymbol{w}_{\alpha}(t))_{t \geq 0}$ in the limit $\alpha \rightarrow \infty$ is equivalent to a kernel method with kernel $\Sigma(\boldsymbol{w}_0)$ the neural tangent kernel \cite{chizat2018note}. This result differs from that of Jacot and colleagues \cite{jacot2018neural}, who show that the gradient flow is equivalent to a kernel method with kernel $\Sigma(\boldsymbol{w}_0)$ in the limit as the width (i.e. number hidden units) in the neural network tends to $\infty$. What this result tells us is that for the problem $h: \boldsymbol{w} \mapsto f(\boldsymbol{w}, \cdot)$, $f(\boldsymbol{w}, \cdot): \mathbb{R}^d \rightarrow \mathbb{R}$, the gradient flow solution $\boldsymbol{w}_{\alpha}^{\star} = \lim_{t \to \infty} \boldsymbol{w}_{\alpha}(t)$ in the $\alpha \rightarrow \infty$ limit satisfies $\alpha h(\boldsymbol{w}_{\alpha}^{\star}) = \alpha f(\boldsymbol{w}_{\alpha}^{\star}, \boldsymbol{x}) = \sum_{i=1}^N \beta_i K(\boldsymbol{x}_i, \boldsymbol{x})$, where $K: \mathbb{R}^d \times \mathbb{R}^d \rightarrow \mathbb{R}$ is the neural tangent kernel $K(\boldsymbol{x}, \boldsymbol{x}') = \langle \nabla_{\boldsymbol{w}} f(\boldsymbol{w}_0, \boldsymbol{x}), \nabla_{\boldsymbol{w}} f(\boldsymbol{w}_0, \boldsymbol{x}') \rangle$ and $\{ (\boldsymbol{x}_i, y_i) \}_{i=1}^N$ is our training data \cite{chizat2018note}. As one may suspect, looking for a predictor in the reproducing kernel Hilbert space determined by $K$ may result in a model $f(\boldsymbol{w}_{\alpha}^{\star}, \boldsymbol{x})$ which does not generalize well outside of the training set. This is because the kernel predictor considers only a fixed set of features $\{ \nabla_{\boldsymbol{w}} f(\boldsymbol{w}_0, \boldsymbol{x}_i) \}_{i=1}^N$ determined by our set of training data.
+
+To examine a concrete application, Woodworth and colleagues consider the lazy training limit $\alpha \rightarrow \infty$ for an alternative parameterization of the linear regression problem \cite{woodworth2020kernel}. In particular, they consider the case in which the linear system $\boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{y}$ is underdetermined, and so there are many solution vectors $\boldsymbol{\beta}$ which minimize the empirical risk $R$. For this problem, the neural tangent kernel $K$ is proportional to the $\ell^2$ kernel, and so the solution reached by gradient flow in the lazy training limit $\alpha \rightarrow \infty$ is the minimum $\ell^2$ solution, $\boldsymbol{\beta}^{\ell^2}$, of the system $\boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{y}$. Conversely, in the limit $\alpha \rightarrow 0$ the gradient flow solution is the minimum $\ell^1$ solution, $\boldsymbol{\beta}^{\ell^1}$, to the system $\boldsymbol{X}\boldsymbol{\beta} = \boldsymbol{y}$ \cite{woodworth2020kernel}. 
+
+From these results, the deficiencies of lazy training are apparent. If we suspect that the data $(\boldsymbol{x}, y) \sim \rho$ is drawn from an underlying distribution $\rho$ with implicit sparsity, then, in general, lazy training will generalize poorly for the linear regression model. An example of such a distribution $\rho$ is $\boldsymbol{x} \sim \mathcal{N}(\boldsymbol{0}, \sigma^2\mathbbm{I}_{d \times d})$, $y = \langle \boldsymbol{x}, \boldsymbol{\beta}^{\star} \rangle$, where $(\boldsymbol{\beta}^{\star})_i = 1/\sqrt{d^{\star}}$ for $1 \leq i \leq d^{\star}$, $(\boldsymbol{\beta}^{\star})_i=0$ otherwise \cite{woodworth2020kernel}. Here, only the first $d^{\star} \ll d$ coordinates of $\boldsymbol{x}$ determine $y$, whereas the remaining $d - d^{\star}$ coordinates provide no information about $y$. For this example, lazy training $\alpha \rightarrow \infty$ would not result in a sparse solution vector $\boldsymbol{\beta}$, whereas training far away from the lazy training limit $\alpha \rightarrow 0$ would attain the sparse solution $\boldsymbol{\beta}^{\star}$. Although this is only one problem in which lazy training performs poorly, there is empirical evidence to suggest that it is more generally true. Expressly, there is experimental data suggesting that gradient flow far away from the lazy training limit, $\alpha \rightarrow 0$, corresponds to some form of implicit $\ell^1$ regularization, which is not the case for lazy training $\alpha \rightarrow \infty$.
+
+Our discussion of the implicit biases present in the gradient flow solution $\boldsymbol{w}_{\alpha}^{\star}$ resulting from lazy training motivate further study of this subject area. Although the work of Chizat and colleagues is certainly groundbreaking in its characterization of lazy training in the limit $\alpha \rightarrow 
+\infty$, it is also very narrow in its applications. More explicitly, as we stated in Section \ref{prelim}, Theorem \ref{finitehorizon} assumes that both the model $h$ and loss function $R$ are everywhere differentiable, which is most definitely not the case for contemporary deep learning models. For instance, by applying the ReLU activation $\max\{0, x\}$ component-wise to the output of each hidden layer, we have a network function that is not differentiable in its weights. Also, as we pointed out in Section \ref{extenduniform}, the uniform time bounds we derived required exceedingly strong assumptions on both the model $h$ and loss $R$. It is of interest whether or not we can relax any of these conditions and still attain convergence that is uniform in time $t \geq 0$.
+
+\section{Conclusion}
+Our report has taken a theoretical dive into the \enquote{lazy training} phenomenon framed by Chizat and colleagues in their paper \enquote{On Lazy Training in Differentiable Programming}. We began by presenting an overview of lazy training. In particular, we gave a vague definition of lazy training as the phenomenon in which the gradient flow of some model $h$ with loss $R$ approaches the gradient flow for the linearization of $h$ around initialization $\boldsymbol{w}_0$. We then proceeded to formalize this definition of lazy training in Theorem \ref{finitehorizon} and proved that it occurs when the scale of the model output $\alpha$ grows arbitrarily large. Thereafter, we justified that this result, while theoretically cogent, is limited in its applications due to the dependence on the time horizon of the gradient flow dynamics. To partially reconcile this difficulty, we then presented and proved Theorem \ref{uniformbound}, which gave us convergence that is uniform in time $t$ but requires stronger assumptions on $h$ and $R$. This theorem is also powerful to the extent that it proves the convergence of the model evaluated along the gradient flow path to the global minimum of the loss $R$. To complete our analysis of lazy training, we detailed some of its limitations, specifically for problems in which the true data distribution $\rho$ is sparse.
+
+By completing this project, I have gained a deeper understanding of the theory dictating lazy training. While my knowledge of lazy training was previously limited to the statements of the main theorems in \cite{chizat2018lazy}, I now know how these results are proven and why they work. And beyond the subject matter itself, I have gained exposure to some functional analysis concepts, which will undoubtedly be useful in the future.
 
 \pagebreak
 \bibliographystyle{siam}
