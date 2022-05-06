@@ -603,12 +603,12 @@ Now, since $\nabla R$ decreases exponentially along both $y(t)$ and $\bar{y}(t)$
 In summary, we have proven that $\forall t \geq 0$,  
 \begin{align*}
     &\| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2\\
-    \leq& \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt + \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt\\
-    =& \mathcal{O}(\log(\alpha)/ \alpha),
+    \leq& (1/\alpha) \cdot \int_0^{\infty} \| Dh(\boldsymbol{w}_{\alpha}(t)) - Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) \|_{\mathcal{F}} \ dt + (1/\alpha) \cdot \int_0^{\infty} \| Dh(\boldsymbol{w}_0) \| \|\nabla R(y(t)) - \nabla R(\bar{y}(t))\|_{\mathcal{F}} \ dt\\
+    =& \mathcal{O}(\log(\alpha)/ \alpha^2),
 \end{align*}
 which implies
 \begin{align*}
-   \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2 = \mathcal{O}(\log(\alpha)/\alpha).
+   \sup_{t \geq 0} \| \boldsymbol{w}_{\alpha}(t) - \boldsymbol{\bar{w}}_{\alpha}(t) \|_2 = \mathcal{O}(\log(\alpha)/\alpha^2).
 \end{align*}
 
 Therefore, we have shown the linear convergence of $y(t)$ to $y^{\star}$ as well as the uniform convergence in time $t \geq 0$ of $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{w}_0$, $y(t)$ to $\bar{y}(t)$, and $\boldsymbol{w}_{\alpha}(t)$ to $\boldsymbol{\bar{w}}_{\alpha}(t)$.
