@@ -450,7 +450,7 @@ Now that we have stated and provided motivation for Theorem \ref{uniformbound} b
 \begin{proof}
 To begin, we define the closed Euclidean ball with radius $r_0 = \sigma_{\text{min}}/(2\text{Lip}(Dh))$ centered at $\boldsymbol{w}_0$, $B_{r_0}(\boldsymbol{w}_0) = \{ \boldsymbol{w} \in \mathbb{R}^p, \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2 \leq r_0 \}$. By our assumption that the map $\boldsymbol{w} \mapsto Dh(\boldsymbol{w})$ is [globally] Lipschitz, we know that for each $f \in \mathcal{F}$,
 \begin{align*}
-    \text{Lip}(Dh)^2 \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \|f \|_2^2 &\geq \|Dh(\boldsymbol{w}) - Dh(\boldsymbol{w}_0)\|^2 \|f\|_2^2\\
+    \text{Lip}(Dh)^2 \| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \|f \|_2^2 &\geq \|Dh(\boldsymbol{w}) - Dh(\boldsymbol{w}_0)\|^2 \|f\|_{\mathcal{F}}^2\\
     &\geq \|(Dh(\boldsymbol{w}) - Dh(\boldsymbol{w}_0))^Tf\|_2^2\\
     &= \|Dh(\boldsymbol{w})^Tf - Dh(\boldsymbol{w}_0)^Tf\|_2^2\\
     &\geq \left| \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - \|Dh(\boldsymbol{w})^Tf\|_2^2 \right|\\
@@ -462,15 +462,15 @@ By subtracting $\|Dh(\boldsymbol{w}_0)^Tf\|_2^2$ over to the left-hand side of t
 \end{align*}
 More specifically, for $\boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$ we know that $\| \boldsymbol{w} - \boldsymbol{w}_0 \|_2^2 \leq r_0^2 = \sigma_{\text{min}}^2/(4\text{Lip}(Dh)^2)$, and so
 \begin{align*}
-    \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
+    \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_{\mathcal{F}}^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
 \end{align*}
 And by our assumption that the smallest singular value of $Dh(\boldsymbol{w}_0)^T$ is $\sigma_{\text{min}}^2 > 0$, then we have a lower bound on the right-hand side of the inequality:
 \begin{align*}
-   \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq |Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2 \geq \sigma_{\text{min}}^2 \|f\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_2^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
+   \|Dh(\boldsymbol{w})^Tf\|_2^2 \geq \|Dh(\boldsymbol{w}_0)^Tf\|_2^2 - (1/4)\sigma_{\text{min}}^2\|f\|_{\mathcal{F}}^2 \geq \sigma_{\text{min}}^2 \|f\|_{\mathcal{F}}^2 - (1/4)\sigma_{\text{min}}^2\|f\|_{\mathcal{F}}^2, \quad \forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0).
 \end{align*}
 And so we have proven that $\forall \boldsymbol{w} \in B_{r_0}(\boldsymbol{w}_0)$, it holds that
 \begin{align*}
-&f\Sigma(\boldsymbol{w})f  = \|Dh(\boldsymbol{w})^Tf\|_2^2  \geq (3/4) \sigma_{\text{min}}^2 \|f\|_2^2, \quad \forall f \in \mathcal{F}\\
+&f\Sigma(\boldsymbol{w})f  = \|Dh(\boldsymbol{w})^Tf\|_2^2  \geq (3/4) \sigma_{\text{min}}^2 \|f\|_{\mathcal{F}}^2, \quad \forall f \in \mathcal{F}\\
 \implies& \Sigma(\boldsymbol{w}) \succeq (3/4) \sigma_{\text{min}}^2\text{Id}.
 \end{align*}
 
